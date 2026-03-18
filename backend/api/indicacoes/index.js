@@ -1,8 +1,10 @@
 // api/indicacoes/index.js — Indicações premiadas
 import { query } from '../../lib/db.js'
-import { ok, created, err, serverErr, allowMethods } from '../../utils/response.js'
+import { ok, created, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET', 'POST', 'PATCH'])
   if (blocked) return
 
@@ -14,9 +16,9 @@ export default async function handler(req, res) {
       const conditions = []
       const params = []
       let i = 1
-      if (mes)         { conditions.push(`ip.mes=$${i++}`)          ; params.push(mes) }
-      if (vendedor_id) { conditions.push(`ip.vendedor_id=$${i++}`)  ; params.push(vendedor_id) }
-      if (status)      { conditions.push(`ip.status=$${i++}`)       ; params.push(status) }
+      if (mes)         { conditions.push(`ip.mes=$${i++}`)         ; params.push(mes) }
+      if (vendedor_id) { conditions.push(`ip.vendedor_id=$${i++}`) ; params.push(vendedor_id) }
+      if (status)      { conditions.push(`ip.status=$${i++}`)      ; params.push(status) }
 
       const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : ''
 
