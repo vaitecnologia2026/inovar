@@ -1,12 +1,14 @@
-// api/cron.js — Rota executada pelo Vercel Cron (substitui node-cron)
+// api/whatsapp/cron.js — Rota executada pelo Vercel Cron (substitui node-cron)
 // Configurar no vercel.json: "schedule": "0 8 * * *" (todo dia às 08:00)
-import { query } from '../lib/db.js'
-import { enviarRelatorioParaEquipe } from '../services/relatorioService.js'
-import { enviarFollowUp } from '../services/whatsappService.js'
-import { ok, err, serverErr } from '../utils/response.js'
+import { query } from '../../lib/db.js'
+import { enviarRelatorioParaEquipe } from '../../services/relatorioService.js'
+import { enviarFollowUp } from '../../services/whatsappService.js'
+import { ok, err, serverErr, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
-  // Proteção: só permite GET e valida token secreto
+  if (setCors(req, res)) return
+
+  // Proteção: só permite GET e POST e valida token secreto
   if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).end()
   }
