@@ -1,9 +1,11 @@
 // api/cupons/index.js — Listar e criar cupons
 import { query } from '../../lib/db.js'
 import { criarCupom } from '../../services/cupomService.js'
-import { ok, created, err, serverErr, allowMethods } from '../../utils/response.js'
+import { ok, created, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET', 'POST'])
   if (blocked) return
 
@@ -17,10 +19,10 @@ export default async function handler(req, res) {
       const params = []
       let i = 1
 
-      if (mes)          { conditions.push(`c.mes=$${i++}`)                    ; params.push(mes) }
-      if (vendedor_id)  { conditions.push(`c.vendedor_id=$${i++}`)            ; params.push(vendedor_id) }
-      if (status)       { conditions.push(`c.status=$${i++}`)                 ; params.push(status) }
-      if (search)       {
+      if (mes)         { conditions.push(`c.mes=$${i++}`)           ; params.push(mes) }
+      if (vendedor_id) { conditions.push(`c.vendedor_id=$${i++}`)   ; params.push(vendedor_id) }
+      if (status)      { conditions.push(`c.status=$${i++}`)        ; params.push(status) }
+      if (search) {
         conditions.push(
           `(c.cliente_nome ILIKE $${i} OR c.codigo ILIKE $${i} OR c.placa ILIKE $${i} OR c.cliente_tel ILIKE $${i})`
         )
@@ -59,8 +61,8 @@ export default async function handler(req, res) {
 
       if (!clienteNome) return err(res, 'Nome do cliente é obrigatório')
       if (!clienteTel)  return err(res, 'WhatsApp do cliente é obrigatório')
-      if (!placa)        return err(res, 'Placa do veículo é obrigatória')
-      if (!vendedorId)   return err(res, 'ID do vendedor é obrigatório')
+      if (!placa)       return err(res, 'Placa do veículo é obrigatória')
+      if (!vendedorId)  return err(res, 'ID do vendedor é obrigatório')
 
       const cupom = await criarCupom({ clienteNome, clienteTel, placa, origem, vendedorId, obs })
       return created(res, { cupom })
