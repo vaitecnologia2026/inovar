@@ -1,9 +1,11 @@
 // api/cupons/[id].js — Detalhar, editar, aprovar, reprovar cupom
 import { query } from '../../lib/db.js'
 import { aprovarCupom, reprovarCupom } from '../../services/cupomService.js'
-import { ok, err, notFound, serverErr, allowMethods } from '../../utils/response.js'
+import { ok, err, notFound, serverErr, allowMethods, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET', 'PUT', 'PATCH'])
   if (blocked) return
 
