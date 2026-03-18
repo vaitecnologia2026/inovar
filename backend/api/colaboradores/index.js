@@ -1,6 +1,6 @@
 // api/colaboradores/index.js — Gestão de colaboradores
 import { query } from '../../lib/db.js'
-import { ok, created, err, serverErr, allowMethods } from '../../utils/response.js'
+import { ok, created, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
 import crypto from 'crypto'
 
 function hashSenha(senha) {
@@ -8,6 +8,8 @@ function hashSenha(senha) {
 }
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET', 'POST', 'PUT'])
   if (blocked) return
 
