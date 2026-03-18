@@ -1,8 +1,10 @@
-// api/origens.js — Origens de indicação
-import { query } from '../lib/db.js'
-import { ok, created, err, serverErr, allowMethods } from '../utils/response.js'
+// api/whatsapp/origens.js — Origens de indicação
+import { query } from '../../lib/db.js'
+import { ok, created, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET', 'POST', 'PUT', 'DELETE'])
   if (blocked) return
 
