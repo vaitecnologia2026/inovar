@@ -1,8 +1,10 @@
 // api/relatorio/index.js — Gerar e enviar relatório manualmente
 import { gerarRelatorio, enviarRelatorioParaEquipe } from '../../services/relatorioService.js'
-import { ok, serverErr, allowMethods } from '../../utils/response.js'
+import { ok, serverErr, allowMethods, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET', 'POST'])
   if (blocked) return
 
