@@ -1,6 +1,6 @@
 // api/auth/login.js — Autenticação de colaboradores
 import { query } from '../../lib/db.js'
-import { ok, err, serverErr, allowMethods } from '../../utils/response.js'
+import { ok, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
 import crypto from 'crypto'
 
 function simpleHash(password) {
@@ -8,6 +8,8 @@ function simpleHash(password) {
 }
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['POST'])
   if (blocked) return
 
@@ -22,7 +24,7 @@ export default async function handler(req, res) {
     )
 
     const colaborador = rows[0]
-    if (!colaborador)      return err(res, 'Credenciais inválidas', 401)
+    if (!colaborador)       return err(res, 'Credenciais inválidas', 401)
     if (!colaborador.ativo) return err(res, 'Usuário inativo', 401)
 
     const hashFornecido = simpleHash(senha)
