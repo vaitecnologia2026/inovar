@@ -5,41 +5,25 @@
       "runtime": "nodejs18.x"
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron",
-      "schedule": "0 8 * * *"
-    }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/public/index.html" }
   ],
-  "env": {
-    "DB_HOST": "@inovar_db_host",
-    "DB_PORT": "@inovar_db_port",
-    "DB_NAME": "@inovar_db_name",
-    "DB_USER": "@inovar_db_user",
-    "DB_PASS": "@inovar_db_pass",
-    "WHATSAPP_API_URL": "@inovar_wa_url",
-    "WHATSAPP_TOKEN": "@inovar_wa_token",
-    "WHATSAPP_ID": "@inovar_wa_id",
-    "JWT_SECRET": "@inovar_jwt_secret",
-    "CRON_SECRET": "@inovar_cron_secret"
-  },
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type,Authorization"
-        }
+        { "key": "Access-Control-Allow-Origin",      "value": "*" },
+        { "key": "Access-Control-Allow-Methods",     "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers",     "value": "Content-Type,Authorization" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 8 * * *"
     }
   ]
 }
