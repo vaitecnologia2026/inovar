@@ -1,8 +1,10 @@
-// api/dashboard.js — Estatísticas consolidadas para o painel admin
-import { query } from '../lib/db.js'
-import { ok, serverErr, allowMethods } from '../utils/response.js'
+// api/whatsapp/dashboard.js — Estatísticas consolidadas para o painel admin
+import { query } from '../../lib/db.js'
+import { ok, serverErr, allowMethods, setCors } from '../../utils/response.js'
 
 export default async function handler(req, res) {
+  if (setCors(req, res)) return
+
   const blocked = allowMethods(req, res, ['GET'])
   if (blocked) return
 
@@ -26,7 +28,7 @@ export default async function handler(req, res) {
       query(`
         SELECT
           c.id, c.nome, c.avatar, c.meta,
-          COUNT(cu.id) FILTER (WHERE cu.mes=$1)                        AS total,
+          COUNT(cu.id) FILTER (WHERE cu.mes=$1)                          AS total,
           COUNT(cu.id) FILTER (WHERE cu.status='aprovado' AND cu.mes=$1) AS aprovados
         FROM colaboradores c
         LEFT JOIN cupons cu ON cu.vendedor_id=c.id
@@ -55,10 +57,10 @@ export default async function handler(req, res) {
 
     return ok(res, {
       mes,
-      totais:  totais.rows[0],
-      ranking: ranking.rows,
+      totais:     totais.rows[0],
+      ranking:    ranking.rows,
       indicacoes: indStats.rows[0],
-      cobrancas: cobrStats.rows[0],
+      cobrancas:  cobrStats.rows[0],
     })
   } catch (e) {
     return serverErr(res, e)
