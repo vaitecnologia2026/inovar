@@ -713,12 +713,18 @@ async function updateBell() {
  api('GET', '/api/colaboradores?status=pendente'),
  ])
  if (!data) return
- const pendentesAcesso = collabData?.colaboradores?.length || 0
- const total = Number(data.totais?.aguardando||0) + Number(data.indicacoes?.aguardando||0) + pendentesAcesso
+ const nCupons   = Number(data.totais?.aguardando||0)
+ const nInds     = Number(data.indicacoes?.aguardando||0)
+ const nAcesso   = collabData?.colaboradores?.length || 0
+ const total     = nCupons + nInds + nAcesso
+ // Salva globalmente para uso no painel de notificações
+ window._bellCounts = { nCupons, nInds, nAcesso, total }
  const badge = document.getElementById('bell-count')
  if (badge) {
  badge.textContent = total
  badge.classList.toggle('hidden', total === 0)
+ // Anima badge quando muda
+ if (total > 0) { badge.style.animation='none'; setTimeout(()=>badge.style.animation='',10) }
  }
 }
 
@@ -727,22 +733,40 @@ function toggleNotif() {
  if (!panel) return
  if (panel.classList.contains('hidden')) {
  panel.classList.remove('hidden')
- panel.innerHTML = `<div style="padding:12px 14px;border-bottom:1px solid var(--border);font-weight:800;font-size:13px;">Notificações</div>
- <div class="notif-item" onclick="navigate('adm-confirmacao')">Cupons aguardando aprovação</div>
- <div class="notif-item" onclick="navigate('adm-premiadas')">Indicações para validar</div>
- <div class="notif-item" onclick="navigate('adm-usuarios')">Solicitações de acesso pendentes</div>`
+ const c = window._bellCounts || {nCupons:0, nInds:0, nAcesso:0, total:0}
+ const item = (svg, label, count, page, color) => count > 0
+ ? `<div class="notif-item" onclick="closeNotif();navigate('${page}')" style="display:flex;align-items:center;gap:10px;">
+ <span style="width:28px;height:28px;border-radius:6px;background:${color}18;display:flex;align-items:center;justify-content:center;color:${color};flex-shrink:0;">${svg}</span>
+ <span style="flex:1;font-size:12px;">${label}</span>
+ <span style="background:${color};color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 7px;min-width:20px;text-align:center;">${count}</span>
+ </div>` : ''
+ const items = [
+ item('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/></svg>', 'Cupons aguardando aprovação', c.nCupons, 'adm-confirmacao', 'var(--yellow)'),
+ item('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"8\" r=\"6\"/><path d=\"M15.477 12.89 17 22l-5-3-5 3 1.523-9.11\"/></svg>', 'Indicações para validar', c.nInds, 'adm-premiadas', 'var(--blue)'),
+ item('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"7.5\" cy=\"15.5\" r=\"5.5\"/><path d=\"m21 2-9.6 9.6\"/><path d=\"m15.5 7.5 3 3L22 7l-3-3\"/></svg>', 'Solicitações de acesso', c.nAcesso, 'adm-usuarios', 'var(--green)'),
+ ].filter(Boolean).join('')
+ panel.innerHTML = `
+ <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+ <span style="font-weight:800;font-size:13px;">Notificações</span>
+ ${c.total > 0 ? `<span style="background:var(--brand);color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 8px;">${c.total} pendente${c.total>1?'s':''}</span>` : ''}
+ </div>
+ ${items || '<div style="padding:16px 14px;font-size:12px;color:var(--muted);text-align:center;">Nenhuma pendência</div>'}
+ `
  document.addEventListener('click', closeNotifOutside)
  } else {
- panel.classList.add('hidden')
- document.removeEventListener('click', closeNotifOutside)
+ closeNotif()
  }
+}
+
+function closeNotif() {
+ document.getElementById('notif-panel')?.classList.add('hidden')
+ document.removeEventListener('click', closeNotifOutside)
 }
 
 function closeNotifOutside(e) {
  const wrap = document.getElementById('bell-wrap')
  if (wrap && !wrap.contains(e.target)) {
- document.getElementById('notif-panel')?.classList.add('hidden')
- document.removeEventListener('click', closeNotifOutside)
+ closeNotif()
  }
 }
 
@@ -795,7 +819,10 @@ async function pageAdmDash() {
  </div>
  </div>
  <div>
- <div class="section-head"><div class="section-title"> Aguardando Aprovação</div><button class="btn btn-ghost btn-sm" onclick="navigate('adm-confirmacao')">Aprovar </button></div>
+ <div class="section-head">
+ <div class="section-title" style="display:flex;align-items:center;gap:7px;"><span style="color:var(--yellow);"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/></svg></span> Aguardando Aprovação</div>
+ <button class="btn btn-ghost btn-sm" onclick="navigate('adm-confirmacao')" style="display:flex;align-items:center;gap:5px;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg> Ver todas</button>
+ </div>
  <div id="pend-preview">${loadingHTML()}</div>
  </div>
  </div>
@@ -809,14 +836,19 @@ async function pageAdmDash() {
  return
  }
  pDiv.innerHTML = pend.cupons.map(c => `
- <div class="confirm-card">
+ <div class="confirm-card" id="cc-dash-${c.id}" style="animation:fadeUp .2s ease;">
+ <div style="width:38px;height:38px;background:var(--brand-glow);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--brand);"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z\"/></svg></div>
  <div class="confirm-info" style="flex:1;">
  <div class="confirm-name">${c.cliente_nome}</div>
- <div class="confirm-detail"><span> ${c.cliente_tel}</span><span> ${c.placa}</span><span> ${c.vendedor_nome||'?'}</span></div>
+ <div class="confirm-detail" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
+ <span style="display:flex;align-items:center;gap:3px;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.18 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z\"/></svg> ${c.cliente_tel}</span>
+ <span style="display:flex;align-items:center;gap:3px;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5\"/><path d=\"M14 17H9\"/><circle cx=\"6.5\" cy=\"17.5\" r=\"2.5\"/><circle cx=\"16.5\" cy=\"17.5\" r=\"2.5\"/></svg> ${c.placa}</span>
+ <span style="display:flex;align-items:center;gap:3px;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg> ${c.vendedor_nome||'?'}</span>
  </div>
- <div class="confirm-actions">
- <button class="btn btn-green btn-sm" onclick="aprovarCupom(${c.id})"></button>
- <button class="btn btn-red btn-sm" onclick="reprovarCupom(${c.id})"></button>
+ </div>
+ <div class="confirm-actions" style="display:flex;gap:5px;">
+ <button class="btn btn-green btn-sm" onclick="aprovarCupom(${c.id})" title="Aprovar e enviar WA" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></button>
+ <button class="btn btn-red btn-sm" onclick="reprovarCupom(${c.id})" title="Recusar" style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"18\" x2=\"6\" y1=\"6\" y2=\"18\"/><line x1=\"6\" x2=\"18\" y1=\"6\" y2=\"18\"/></svg></button>
  </div>
  </div>`).join('')
 }
@@ -862,8 +894,8 @@ async function pageAdmConfirm() {
  </div>
  </div>
  <div class="confirm-actions">
- <button class="btn btn-green btn-sm" onclick="aprovarCupom(${c.id})"> Aprovar + WA</button>
- <button class="btn btn-red btn-sm" onclick="reprovarCupom(${c.id})"> Recusar</button>
+ <button class="btn btn-green btn-sm" onclick="aprovarCupom(${c.id})" style="display:flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Aprovar + WA</button>
+ <button class="btn btn-red btn-sm" onclick="reprovarCupom(${c.id})" style="display:flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg> Recusar</button>
  </div>
  </div>`).join('')
  : '<div class="empty-state"><div class="icon"></div><p style="font-weight:700;font-size:15px;">Tudo aprovado!</p></div>'}
