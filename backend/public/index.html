@@ -1916,7 +1916,7 @@ async function pageAdmConfig() {
  </div>`
  else if (tab==='api') body = `<div style="background:rgba(228,32,42,.07);border:1px solid rgba(228,32,42,.2);border-radius:6px;padding:11px 14px;margin-bottom:16px;font-size:12px;"> Credenciais salvas em variáveis de ambiente no Vercel</div>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
- ${fld('URL Base da API','api-url',c.whatsapp_api_url||process?.env?.WHATSAPP_API_URL,'url')}
+ ${fld('URL Base da API','api-url',c.whatsapp_api_url|| '','url')}
  ${fld('Token','api-token','','password','••••••••')}
  ${fld('ID Instância WhatsApp','api-inst','')}
  ${fld('Webhook N8N','api-webhook','')}
