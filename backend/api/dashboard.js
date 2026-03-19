@@ -1,6 +1,6 @@
-// api/whatsapp/dashboard.js — Estatísticas consolidadas para o painel admin
-import { query } from '../../lib/db.js'
-import { ok, serverErr, allowMethods, setCors } from '../../utils/response.js'
+// api/dashboard.js — Estatísticas consolidadas para o painel admin
+import { query } from '../lib/db.js'
+import { ok, serverErr, allowMethods, setCors } from '../utils/response.js'
 
 export default async function handler(req, res) {
   if (setCors(req, res)) return
