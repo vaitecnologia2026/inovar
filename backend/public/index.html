@@ -243,7 +243,7 @@ tbody td{padding:12px 14px;font-size:12.5px;}
 // ═══════════════════════════════════════════════════════════════
 const API_BASE = window.location.hostname === 'localhost'
   ? 'http://localhost:3000'
-  : ''  // mesmo domínio — frontend e backend no mesmo projeto Vercel
+  : 'https://inovar-backend.vercel.app'  // ← trocar pela URL real do Vercel
 
 // ═══════════════════════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -1402,29 +1402,40 @@ async function pageAdmRelatorio() {
   const el = document.getElementById('content-area')
   el.innerHTML = loadingHTML()
 
-  const preview = await api('GET', '/api/relatorio')
+  const [preview, cfgData] = await Promise.all([
+    api('GET', '/api/relatorio'),
+    api('GET', '/api/config?categoria=relatorio'),
+  ])
   if (!preview) return
+
+  const cfg = cfgData?.config || {}
+  const numSalvo   = cfg.relatorio_numero   || ''
+  const horaSalva  = cfg.relatorio_horario  || '08:00'
+  const freqSalva  = cfg.relatorio_frequencia || 'diario'
+  const emailSalvo = cfg.relatorio_email    || ''
+  const temNumero  = numSalvo.replace(/\D/g,'').length >= 10
 
   el.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;max-width:680px;">
       <div><h2 style="font-size:20px;font-weight:800;">📨 Relatório Automático</h2>
       <p style="font-size:12px;color:var(--muted);">Configurar e disparar relatório no padrão VAI</p></div>
-      <button class="btn btn-brand" onclick="enviarRelatorioAgora()">▶ Enviar Agora</button>
+      <button class="btn btn-brand" onclick="enviarRelatorioAgora()" id="btn-enviar-rel">▶ Enviar Agora</button>
     </div>
     <div style="max-width:680px;">
+      \${!temNumero ? '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">⚠️ Configure o <b>Número WhatsApp</b> abaixo e salve antes de enviar.</div>' : '<div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">✅ Número configurado: <b>' + numSalvo + '</b> — pronto para envio.</div>'}
       <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:800;margin-bottom:14px;">⏰ Agendamento</div>
+        <div style="font-size:13px;font-weight:800;margin-bottom:14px;">⏰ Agendamento e Destino</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="08:00" ${inputStyle()}></div>
+          <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="\${horaSalva}" ${inputStyle()}></div>
           <div class="field"><label>Frequência</label>
             <select id="rel-freq" ${inputStyle()}>
-              <option value="diario">📅 Diário</option>
-              <option value="semanal">📆 Semanal</option>
-              <option value="mensal">🗓️ Mensal</option>
+              <option value="diario" \${freqSalva==='diario'?'selected':''}>📅 Diário</option>
+              <option value="semanal" \${freqSalva==='semanal'?'selected':''}>📆 Semanal</option>
+              <option value="mensal" \${freqSalva==='mensal'?'selected':''}>🗓️ Mensal</option>
             </select>
           </div>
-          <div class="field"><label>Número WhatsApp</label><input type="tel" id="rel-num" placeholder="(47) 99999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
-          <div class="field"><label>E-mail</label><input type="email" id="rel-email" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
+          <div class="field"><label>Número WhatsApp *</label><input type="tel" id="rel-num" value="\${numSalvo}" placeholder="(47) 9999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
+          <div class="field"><label>E-mail</label><input type="email" id="rel-email" value="\${emailSalvo}" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px;">
           <button class="btn btn-brand" onclick="salvarConfigRelatorio()">💾 Salvar Configuração</button>
@@ -1432,14 +1443,22 @@ async function pageAdmRelatorio() {
       </div>
       <div style="background:var(--card2);border-radius:6px;padding:16px;">
         <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📱 Preview do relatório</div>
-        <pre style="font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'Montserrat',sans-serif;">${preview.preview||''}</pre>
+        <pre style="font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'Montserrat',sans-serif;">\${preview.preview||''}</pre>
       </div>
     </div>`
 }
 
 async function enviarRelatorioAgora() {
-  showToast('⏳ Gerando relatório...', '')
+  const num = document.getElementById('rel-num')?.value?.replace(/\D/g,'') || ''
+  if (num.length < 10) {
+    showToast('⚠️ Configure e salve o Número WhatsApp primeiro', 'error')
+    return
+  }
+  const btn = document.getElementById('btn-enviar-rel')
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...' }
+  showToast('⏳ Gerando e enviando relatório...', '')
   const data = await api('POST', '/api/relatorio')
+  if (btn) { btn.disabled = false; btn.textContent = '▶ Enviar Agora' }
   if (!data) return
   showToast(data.enviado ? '✅ Relatório enviado!' : '⚠️ ' + (data.motivo||'Erro'), data.enviado?'success':'error')
 }
@@ -1447,13 +1466,15 @@ async function enviarRelatorioAgora() {
 async function salvarConfigRelatorio() {
   const updates = {}
   const g = id => document.getElementById(id)?.value
-  if (g('rel-hora'))  updates.relatorio_horario = g('rel-hora')
-  if (g('rel-freq'))  updates.relatorio_frequencia = g('rel-freq')
-  if (g('rel-num'))   updates.relatorio_numero = g('rel-num')
-  if (g('rel-email')) updates.relatorio_email  = g('rel-email')
-  if (Object.keys(updates).length) {
-    const data = await api('POST', '/api/config', updates)
-    if (data) showToast('✅ Configurações salvas!', 'success')
+  if (g('rel-hora'))  updates.relatorio_horario     = g('rel-hora')
+  if (g('rel-freq'))  updates.relatorio_frequencia  = g('rel-freq')
+  if (g('rel-num'))   updates.relatorio_numero      = g('rel-num')
+  if (g('rel-email')) updates.relatorio_email       = g('rel-email')
+  if (!Object.keys(updates).length) { showToast('Nada para salvar', ''); return }
+  const data = await api('POST', '/api/config', updates)
+  if (data) {
+    showToast('✅ Configurações salvas!', 'success')
+    navigate('adm-relatorio') // recarrega para mostrar status atualizado
   }
 }
 
