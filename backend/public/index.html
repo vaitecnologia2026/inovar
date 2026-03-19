@@ -537,14 +537,7 @@ async function doCadastro() {
  setTimeout(()=>showLogin(),4000)
 }
 
-// Recuperar sessão se já logado
-;(() => {
- const saved = sessionStorage.getItem('inovar_user')
- if (authToken && saved) {
- currentUser = JSON.parse(saved)
- bootstrapShell()
- }
-})()
+// [recuperação de sessão movida para após navigate]
 
 // 
 // TEMA
@@ -652,8 +645,25 @@ function navigate(page) {
  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
  document.getElementById('nav-' + page)?.classList.add('active')
  document.getElementById('top-page-label').textContent = PAGE_LABELS[page] || page
+ const ca = document.getElementById('content-area')
+ if (ca) { ca.style.opacity='0'; ca.style.transform='translateY(8px)' }
+ setTimeout(() => {
  if (PAGES[page]) PAGES[page]()
+ if (ca) {
+ ca.style.transition = 'opacity .25s ease, transform .25s ease'
+ ca.style.opacity='1'; ca.style.transform='translateY(0)'
+ }
+ }, 60)
 }
+
+// Recuperar sessão se já logado — DEVE ficar após PAGE_LABELS, PAGES e navigate estarem definidos
+;(() => {
+ const saved = sessionStorage.getItem('inovar_user')
+ if (authToken && saved) {
+ try { currentUser = JSON.parse(saved) } catch { return }
+ bootstrapShell()
+ }
+})()
 
 // 
 // HELPERS
