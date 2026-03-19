@@ -18,18 +18,25 @@ export default async function handler(req, res) {
     if (!login || !senha) return err(res, 'Login e senha são obrigatórios')
 
     const { rows } = await query(
-      `SELECT id, nome, login, perfil, avatar, meta, ativo, senha_hash
+      `SELECT id, nome, login, perfil, avatar, meta, ativo, status, whatsapp, senha_hash
        FROM colaboradores WHERE login=$1`,
       [login]
     )
 
     const colaborador = rows[0]
-    if (!colaborador)       return err(res, 'Credenciais inválidas', 401)
-    if (!colaborador.ativo) return err(res, 'Usuário inativo', 401)
+    if (!colaborador) return err(res, 'Credenciais inválidas', 401)
 
+    // Verifica senha antes de checar status
     const hashFornecido = simpleHash(senha)
     if (hashFornecido !== colaborador.senha_hash)
       return err(res, 'Credenciais inválidas', 401)
+
+    // Verifica status após senha correta
+    if (colaborador.status === 'pendente')
+      return err(res, 'Cadastro aguardando aprovação do gestor', 403)
+
+    if (!colaborador.ativo || colaborador.status === 'inativo')
+      return err(res, 'Usuário inativo', 401)
 
     // Remove senha do retorno
     delete colaborador.senha_hash
