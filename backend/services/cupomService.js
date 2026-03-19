@@ -18,12 +18,15 @@ export async function criarCupom({ clienteNome, clienteTel, placa, origem, vende
   const config = await getConfig()
   const codigo = await gerarCodigo(config.cupom_prefixo || 'INV')
 
+  const hoje = new Date()
+  const mes  = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`
+
   const { rows } = await query(
     `INSERT INTO cupons
-      (codigo, cliente_nome, cliente_tel, placa, origem, vendedor_id, status, whatsapp_enviado, obs)
-     VALUES ($1,$2,$3,$4,$5,$6,'aguard_aprovacao',false,$7)
+      (codigo, cliente_nome, cliente_tel, placa, origem, vendedor_id, status, whatsapp_enviado, obs, mes)
+     VALUES ($1,$2,$3,$4,$5,$6,'aguard_aprovacao',false,$7,$8)
      RETURNING *`,
-    [codigo, clienteNome, clienteTel, placa, origem, vendedorId, obs]
+    [codigo, clienteNome, clienteTel, placa, origem, vendedorId, obs, mes]
   )
   return rows[0]
 }
@@ -40,11 +43,11 @@ export async function aprovarCupom(cupomId, adminId) {
   let waOk = false
   try {
     await enviarCupom({
-      numero:     cupom.cliente_tel,
-      nome:       cupom.cliente_nome,
-      codigo:     cupom.codigo,
+      numero:       cupom.cliente_tel,
+      nome:         cupom.cliente_nome,
+      codigo:       cupom.codigo,
       mensagemBase: config.cupom_mensagem,
-      imagemUrl:  config.cupom_imagem_url || null,
+      imagemUrl:    config.cupom_imagem_url || null,
     })
     waOk = true
   } catch (e) {
@@ -97,7 +100,7 @@ export async function reprovarCupom(cupomId, adminId) {
   return updated
 }
 
-// Busca configurações do sistema em cache simples
+// Busca configurações do sistema
 async function getConfig() {
   try {
     const { rows } = await query('SELECT chave, valor FROM config_sistema')
