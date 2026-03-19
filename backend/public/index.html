@@ -1422,20 +1422,20 @@ async function pageAdmRelatorio() {
       <button class="btn btn-brand" onclick="enviarRelatorioAgora()" id="btn-enviar-rel">▶ Enviar Agora</button>
     </div>
     <div style="max-width:680px;">
-      \${!temNumero ? '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">⚠️ Configure o <b>Número WhatsApp</b> abaixo e salve antes de enviar.</div>' : '<div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">✅ Número configurado: <b>' + numSalvo + '</b> — pronto para envio.</div>'}
+      ${!temNumero ? '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">⚠️ Configure o <b>Número WhatsApp</b> abaixo e salve antes de enviar.</div>' : '<div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">✅ Número configurado: <b>' + numSalvo + '</b> — pronto para envio.</div>'}
       <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px;margin-bottom:16px;">
         <div style="font-size:13px;font-weight:800;margin-bottom:14px;">⏰ Agendamento e Destino</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="\${horaSalva}" ${inputStyle()}></div>
+          <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="${horaSalva}" ${inputStyle()}></div>
           <div class="field"><label>Frequência</label>
             <select id="rel-freq" ${inputStyle()}>
-              <option value="diario" \${freqSalva==='diario'?'selected':''}>📅 Diário</option>
-              <option value="semanal" \${freqSalva==='semanal'?'selected':''}>📆 Semanal</option>
-              <option value="mensal" \${freqSalva==='mensal'?'selected':''}>🗓️ Mensal</option>
+              <option value="diario" ${freqSalva==='diario'?'selected':''}>📅 Diário</option>
+              <option value="semanal" ${freqSalva==='semanal'?'selected':''}>📆 Semanal</option>
+              <option value="mensal" ${freqSalva==='mensal'?'selected':''}>🗓️ Mensal</option>
             </select>
           </div>
-          <div class="field"><label>Número WhatsApp *</label><input type="tel" id="rel-num" value="\${numSalvo}" placeholder="(47) 9999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
-          <div class="field"><label>E-mail</label><input type="email" id="rel-email" value="\${emailSalvo}" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
+          <div class="field"><label>Número WhatsApp *</label><input type="tel" id="rel-num" value="${numSalvo}" placeholder="(47) 9999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
+          <div class="field"><label>E-mail</label><input type="email" id="rel-email" value="${emailSalvo}" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px;">
           <button class="btn btn-brand" onclick="salvarConfigRelatorio()">💾 Salvar Configuração</button>
@@ -1443,7 +1443,7 @@ async function pageAdmRelatorio() {
       </div>
       <div style="background:var(--card2);border-radius:6px;padding:16px;">
         <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📱 Preview do relatório</div>
-        <pre style="font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'Montserrat',sans-serif;">\${preview.preview||''}</pre>
+        <pre style="font-size:12px;line-height:1.9;color:var(--text);white-space:pre-wrap;font-family:'Montserrat',sans-serif;">${preview.preview||''}</pre>
       </div>
     </div>`
 }
