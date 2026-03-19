@@ -298,9 +298,9 @@ tbody tr{transition:background .1s ease;}
  <div style="font-size:12px;color:var(--muted);font-weight:600;" id="top-page-label">Dashboard</div>
  </div>
  <div class="topbar-right">
- <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema" style="display:flex;align-items:center;justify-content:center;"></button>
+ <button class="bell-btn" id="theme-btn" onclick="toggleTheme()" title="Tema" style="display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
  <div class="bell-wrap" id="bell-wrap" style="display:none;">
- <div class="bell-btn" onclick="toggleNotif()"><span class="bell-badge hidden" id="bell-count">0</span></div>
+ <div class="bell-btn" onclick="toggleNotif()" style="display:flex;align-items:center;justify-content:center;position:relative;"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="bell-badge hidden" id="bell-count">0</span></div>
  <div class="hidden" id="notif-panel" style="position:absolute;top:42px;right:0;width:300px;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,.5);z-index:500;overflow:hidden;"></div>
  </div>
  <div class="user-pill">
@@ -552,7 +552,7 @@ async function doCadastro() {
 function applyTheme() {
  document.body.classList.toggle('light', !isDark)
  const btn = document.getElementById('theme-btn')
- if (btn) btn.innerHTML = isDark ? ic('moon',16) : ic('sun',16)
+ if (btn) btn.innerHTML = isDark ? '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>'
 }
 function toggleTheme() {
  isDark = !isDark
@@ -1771,7 +1771,7 @@ async function pageAdmConfig() {
  el.innerHTML = `
  <div style="margin-bottom:22px;"><h2 style="font-size:20px;font-weight:800;"> Configurações</h2></div>
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;">
- ${tabs.map(t => `<button class="btn ${t.id===tab?'btn-brand':'btn-ghost'} btn-sm" style="font-size:11px;" onclick="window._configTab='${t.id}';pageAdmConfig()">${t.icon} ${t.label}</button>`).join('')}
+ ${tabs.map(t => `<button class="btn ${t.id===tab?'btn-brand':'btn-ghost'} btn-sm" style="font-size:11px;display:inline-flex;align-items:center;gap:5px;" onclick="window._configTab='${t.id}';pageAdmConfig()">${ic(t.icon,13)}${t.label}</button>`).join('')}
  </div>
  <div style="max-width:680px;">${body}
  ${tab !== 'aparencia' ? `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
