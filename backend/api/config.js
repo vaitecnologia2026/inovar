@@ -1,6 +1,6 @@
-// api/whatsapp/config.js — Leitura e escrita das configurações do sistema
-import { query } from '../../lib/db.js'
-import { ok, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
+// api/config.js — Leitura e escrita das configurações do sistema
+import { query } from '../lib/db.js'
+import { ok, err, serverErr, allowMethods, setCors } from '../utils/response.js'
 
 export default async function handler(req, res) {
   if (setCors(req, res)) return
