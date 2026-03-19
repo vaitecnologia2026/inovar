@@ -1,6 +1,6 @@
-// api/whatsapp/origens.js — Origens de indicação
-import { query } from '../../lib/db.js'
-import { ok, created, err, serverErr, allowMethods, setCors } from '../../utils/response.js'
+// api/origens.js — Origens de indicação
+import { query } from '../lib/db.js'
+import { ok, created, err, serverErr, allowMethods, setCors } from '../utils/response.js'
 
 export default async function handler(req, res) {
   if (setCors(req, res)) return
@@ -48,7 +48,6 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const { id } = req.query
       if (!id) return err(res, 'ID é obrigatório')
-      // Só permite excluir se não houver cupons com essa origem
       const { rows: [{ total }] } = await query(
         `SELECT COUNT(*) AS total FROM cupons WHERE origem=(SELECT nome FROM origens WHERE id=$1)`,
         [id]
