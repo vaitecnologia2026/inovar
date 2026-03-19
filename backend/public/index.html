@@ -1237,75 +1237,238 @@ async function salvarMetaModal(id) {
 // 
 // ADM — ORIGENS
 // 
-async function pageAdmOrigens() {
- const el = document.getElementById('content-area')
- el.innerHTML = loadingHTML()
- const data = await api('GET', '/api/origens')
- if (!data) return
+// Mapa de ícones disponíveis para origens
+const ORIGEM_ICONS = {
+  'users':        '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'user':         '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  'phone':        '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.18 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  'message':      '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  'mail':         '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  'smartphone':   '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
+  'globe':        '<circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  'share':        '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>',
+  'instagram':    '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>',
+  'facebook':     '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
+  'linkedin':     '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
+  'youtube':      '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><polygon points="10 15 15 12 10 9"/>',
+  'star':         '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  'heart':        '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+  'home':         '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  'map-pin':      '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  'car':          '<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><path d="M14 17H9"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="17.5" r="2.5"/>',
+  'briefcase':    '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  'handshake':    '<path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-1"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/>',
+  'megaphone':    '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  'target':       '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  'zap':          '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  'award':        '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/>',
+  'gift':         '<polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+  'tv':           '<rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/>',
+  'radio':        '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/>',
+  'shopping-bag': '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" x2="21" y1="6" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  'building':     '<rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/>',
+  'clipboard':    '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  'tag':          '<path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/>',
+  'percent':      '<line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  'truck':        '<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><rect width="5" height="5" x="15" y="12" rx="1"/><circle cx="8" cy="17" r="2"/><circle cx="19" cy="17" r="2"/>',
+  'wifi':         '<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" x2="12.01" y1="20" y2="20"/>',
+  'coffee':       '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/>',
+}
 
- el.innerHTML = `
- <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;max-width:600px;">
- <h2 style="font-size:20px;font-weight:800;"> Origens de Indicação</h2>
- <button class="btn btn-brand btn-sm" onclick="abrirNovaOrigem()" style="display:flex;align-items:center;gap:5px;"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>Nova Origem</button>
- </div>
- <div id="nova-origem-form" class="hidden" style="background:var(--card);border:1px solid rgba(228,32,42,.3);border-radius:6px;padding:18px;margin-bottom:16px;max-width:600px;">
- <div style="font-size:13px;font-weight:800;margin-bottom:12px;">Nova Origem</div>
- <div style="display:grid;grid-template-columns:80px 1fr;gap:10px;align-items:end;margin-bottom:12px;">
- <div class="field"><label>Ícone</label><input type="text" id="fo-icone" placeholder="" maxlength="2" ${inputStyle('text-align:center;font-size:18px;')}></div>
- <div class="field"><label>Nome *</label><input type="text" id="fo-nome" placeholder="Ex: Parceiro Comercial..." ${inputStyle()}></div>
- </div>
- <div style="display:flex;gap:8px;justify-content:flex-end;">
- <button class="btn btn-ghost btn-sm" onclick="document.getElementById('nova-origem-form').classList.add('hidden')">Cancelar</button>
- <button class="btn btn-brand btn-sm" onclick="salvarOrigem()">Salvar</button>
- </div>
- </div>
- <div style="max-width:600px;" class="table-wrap">
- <table>
- <thead><tr><th>Ícone</th><th>Nome</th><th>Status</th><th>Ação</th></tr></thead>
- <tbody>
- ${data.origens.map(o => `<tr>
- <td style="font-size:20px;">${o.icone}</td>
- <td><b>${o.nome}</b></td>
- <td><span class="tag ${o.ativo?'tag-green':'tag-red'}">${o.ativo?' Ativa':' Inativa'}</span></td>
- <td>
- <div style="display:flex;gap:4px;">
- <button class="btn btn-ghost btn-sm" onclick="toggleOrigem(${o.id},${!o.ativo})">${o.ativo?'':''}</button>
- <button class="btn btn-red btn-sm" onclick="excluirOrigem(${o.id})"></button>
- </div>
- </td>
- </tr>`).join('')}
- </tbody>
- </table>
- </div>`
+const ORIGEM_COLORS = ['#E4202A','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#06b6d4','#ec4899','#64748b','#f97316','#10b981']
+
+function origemIconSVG(iconKey, color, size=20) {
+  const path = ORIGEM_ICONS[iconKey]
+  if (!path) return `<span style="width:${size}px;height:${size}px;display:inline-flex;"></span>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color||'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`
+}
+
+function renderOrigemIcon(icone, size=20) {
+  try {
+    const parsed = JSON.parse(icone)
+    return origemIconSVG(parsed.key, parsed.color, size)
+  } catch {
+    return icone ? `<span style="font-size:${size}px;line-height:1;">${icone}</span>` : ''
+  }
+}
+
+async function pageAdmOrigens() {
+  const el = document.getElementById('content-area')
+  el.innerHTML = loadingHTML()
+  const data = await api('GET', '/api/origens')
+  if (!data) return
+
+  const PAUSE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>'
+  const PLAY_SVG  = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+  const TRASH_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>'
+  const PLUS_SVG  = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>'
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;max-width:680px;">
+      <h2 style="font-size:20px;font-weight:800;">Origens de Indicação</h2>
+      <button class="btn btn-brand btn-sm" onclick="abrirNovaOrigem()" style="display:flex;align-items:center;gap:5px;">${PLUS_SVG} Nova Origem</button>
+    </div>
+
+    <div id="nova-origem-form" class="hidden" style="background:var(--card);border:1px solid rgba(228,32,42,.3);border-radius:8px;padding:20px;margin-bottom:18px;max-width:680px;animation:fadeUp .2s ease;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:16px;">Nova Origem</div>
+
+      <div class="field" style="margin-bottom:14px;">
+        <label>Nome *</label>
+        <input type="text" id="fo-nome" placeholder="Ex: Parceiro Comercial..." ${inputStyle()}>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;display:block;margin-bottom:8px;">Ícone</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="icon-picker">
+          ${Object.keys(ORIGEM_ICONS).map(k => `
+            <button type="button" onclick="selectOrigemIcon('${k}')" id="icon-opt-${k}"
+              style="width:36px;height:36px;border-radius:6px;border:1.5px solid var(--border);background:var(--card2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s ease;"
+              title="${k}">
+              ${origemIconSVG(k,'currentColor',16)}
+            </button>`).join('')}
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;display:block;margin-bottom:8px;">Cor do Ícone</label>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          ${ORIGEM_COLORS.map(c => `
+            <button type="button" onclick="selectOrigemColor('${c}')" id="color-opt-${c.replace('#','')}"
+              style="width:28px;height:28px;border-radius:50%;background:${c};border:2px solid transparent;cursor:pointer;transition:all .15s ease;"
+              title="${c}"></button>`).join('')}
+          <input type="color" id="fo-color-custom" value="#E4202A"
+            style="width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;padding:0;background:none;"
+            oninput="selectOrigemColor(this.value)" title="Cor personalizada">
+        </div>
+      </div>
+
+      <div style="background:var(--card2);border-radius:6px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+        <div id="fo-preview" style="width:40px;height:40px;border-radius:8px;background:rgba(228,32,42,.12);display:flex;align-items:center;justify-content:center;">
+          ${origemIconSVG('tag','#E4202A',22)}
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:2px;">PRÉVIA</div>
+          <div style="font-size:13px;font-weight:600;" id="fo-preview-nome">Nome da origem</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('nova-origem-form').classList.add('hidden')">Cancelar</button>
+        <button class="btn btn-brand btn-sm" onclick="salvarOrigem()" style="display:flex;align-items:center;gap:5px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar
+        </button>
+      </div>
+    </div>
+
+    <div style="max-width:680px;" class="table-wrap">
+      <table>
+        <thead><tr><th style="width:60px;">Ícone</th><th>Nome</th><th>Status</th><th style="width:100px;">Ação</th></tr></thead>
+        <tbody>
+          ${data.origens.map(o => `<tr>
+            <td><div style="width:36px;height:36px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;">${renderOrigemIcon(o.icone,22)}</div></td>
+            <td><b style="font-size:13px;">${o.nome}</b></td>
+            <td><span class="tag ${o.ativo?'tag-green':'tag-red'}" style="font-size:10px;font-weight:700;">${o.ativo?'Ativa':'Inativa'}</span></td>
+            <td>
+              <div style="display:flex;gap:5px;">
+                <button class="btn btn-ghost btn-sm" onclick="toggleOrigem(${o.id},${!o.ativo})" title="${o.ativo?'Desativar':'Ativar'}" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;">${o.ativo?PAUSE_SVG:PLAY_SVG}</button>
+                <button class="btn btn-red btn-sm" onclick="excluirOrigem(${o.id})" title="Excluir" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;">${TRASH_SVG}</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`
+
+  // Inicializa seleção padrão
+  window._origemIconKey   = 'tag'
+  window._origemIconColor = '#E4202A'
+  selectOrigemIcon('tag')
+  selectOrigemColor('#E4202A')
+
+  // Preview ao digitar nome
+  document.getElementById('fo-nome')?.addEventListener('input', function() {
+    const el = document.getElementById('fo-preview-nome')
+    if (el) el.textContent = this.value || 'Nome da origem'
+  })
+}
+
+function selectOrigemIcon(key) {
+  window._origemIconKey = key
+  // Reset todos
+  document.querySelectorAll('[id^="icon-opt-"]').forEach(b => {
+    b.style.borderColor = 'var(--border)'
+    b.style.background  = 'var(--card2)'
+  })
+  // Ativa selecionado
+  const btn = document.getElementById('icon-opt-' + key)
+  if (btn) {
+    btn.style.borderColor = window._origemIconColor || '#E4202A'
+    btn.style.background  = 'rgba(228,32,42,.1)'
+  }
+  updateOrigemPreview()
+}
+
+function selectOrigemColor(color) {
+  window._origemIconColor = color
+  // Reset todos
+  document.querySelectorAll('[id^="color-opt-"]').forEach(b => {
+    b.style.border = '2px solid transparent'
+    b.style.transform = 'scale(1)'
+  })
+  const id = 'color-opt-' + color.replace('#','')
+  const btn = document.getElementById(id)
+  if (btn) {
+    btn.style.border = '2px solid var(--text)'
+    btn.style.transform = 'scale(1.2)'
+  }
+  // Atualiza borda do ícone selecionado
+  if (window._origemIconKey) {
+    const iconBtn = document.getElementById('icon-opt-' + window._origemIconKey)
+    if (iconBtn) iconBtn.style.borderColor = color
+  }
+  updateOrigemPreview()
+}
+
+function updateOrigemPreview() {
+  const key   = window._origemIconKey   || 'tag'
+  const color = window._origemIconColor || '#E4202A'
+  const prev  = document.getElementById('fo-preview')
+  if (prev) {
+    prev.style.background = color + '18'
+    prev.innerHTML = origemIconSVG(key, color, 22)
+  }
 }
 
 function abrirNovaOrigem() {
- document.getElementById('nova-origem-form')?.classList.remove('hidden')
- document.getElementById('fo-nome')?.focus()
+  document.getElementById('nova-origem-form')?.classList.remove('hidden')
+  document.getElementById('fo-nome')?.focus()
 }
 
 async function salvarOrigem() {
- const nome = document.getElementById('fo-nome')?.value.trim()
- const icone = document.getElementById('fo-icone')?.value.trim() || ''
- if (!nome) { showToast('Informe o nome','error'); return }
- const data = await api('POST', '/api/origens', {nome, icone})
- if (!data) return
- showToast(`Origem "${nome}" criada `, 'success')
- navigate('adm-origens')
+  const nome  = document.getElementById('fo-nome')?.value.trim()
+  const key   = window._origemIconKey   || 'tag'
+  const color = window._origemIconColor || '#E4202A'
+  const icone = JSON.stringify({key, color})
+  if (!nome) { showToast('Informe o nome','error'); return }
+  const data = await api('POST', '/api/origens', {nome, icone})
+  if (!data) return
+  showToast('Origem criada com sucesso', 'success')
+  navigate('adm-origens')
 }
 
 async function toggleOrigem(id, ativo) {
- const data = await api('PUT', '/api/origens', {id, ativo})
- if (!data) return
- showToast(ativo ? 'Origem ativada' : 'Origem desativada', 'success')
- navigate('adm-origens')
+  const data = await api('PUT', '/api/origens', {id, ativo})
+  if (!data) return
+  showToast(ativo ? 'Origem ativada' : 'Origem desativada', 'success')
+  navigate('adm-origens')
 }
 
 async function excluirOrigem(id) {
- const data = await api('DELETE', `/api/origens?id=${id}`)
- if (!data) return
- showToast('Origem removida', '')
- navigate('adm-origens')
+  const data = await api('DELETE', `/api/origens?id=${id}`)
+  if (!data) return
+  showToast('Origem removida', '')
+  navigate('adm-origens')
 }
 
 // 
