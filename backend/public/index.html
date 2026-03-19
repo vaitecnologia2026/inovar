@@ -197,6 +197,26 @@ tbody td{padding:12px 14px;font-size:12.5px;}
       <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div id="login-error" style="font-size:12px;color:var(--red);text-align:center;display:none;"></div>
       <button class="btn btn-brand" id="btn-login" style="justify-content:center;padding:13px;font-size:14px;letter-spacing:1px;text-transform:uppercase;border-radius:4px;" onclick="doLogin()">ACESSAR →</button>
+      <div style="text-align:center;margin-top:4px;"><button onclick="showCadastro()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;font-family:Montserrat,sans-serif;letter-spacing:.5px;">Não tem acesso? Solicitar cadastro →</button></div>
+    </div>
+    <div style="margin-top:18px;font-size:10px;color:rgba(255,255,255,.15);letter-spacing:1px;">INOVAR PROTEÇÃO VEICULAR · SISTEMA INTERNO</div>
+  </div>
+</div>
+
+<!-- ═══ CADASTRO ═══ -->
+<div id="screen-cadastro" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0A0A0A,#1a0505 50%,#0A0A0A);position:relative;">
+  <div class="login-wrap">
+    <div class="inovar-logo"><div class="inovar-logo-text"><span>INOVAR</span></div></div>
+    <div class="inovar-sub">Solicitar Acesso ao Sistema</div>
+    <div class="login-form">
+      <div class="field"><label>Nome Completo *</label><input type="text" id="cad-nome" placeholder="Ex: João da Silva"></div>
+      <div class="field"><label>E-mail / Login *</label><input type="email" id="cad-login" placeholder="seu@email.com.br"></div>
+      <div class="field"><label>WhatsApp *</label><input type="tel" id="cad-whatsapp" placeholder="(47) 9999-9999" oninput="mascaraTel(this)"></div>
+      <div class="field"><label>Senha *</label><input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres"></div>
+      <div id="cad-error" style="font-size:12px;color:var(--red);text-align:center;display:none;"></div>
+      <div id="cad-success" style="font-size:12px;color:var(--green);text-align:center;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:4px;padding:10px;display:none;"></div>
+      <button class="btn btn-brand" id="btn-cadastro" style="justify-content:center;padding:13px;font-size:14px;letter-spacing:1px;text-transform:uppercase;border-radius:4px;" onclick="doCadastro()">SOLICITAR ACESSO →</button>
+      <div style="text-align:center;"><button onclick="showLogin()" style="background:none;border:none;color:rgba(255,255,255,.35);font-size:11px;cursor:pointer;font-family:Montserrat,sans-serif;">← Voltar ao login</button></div>
     </div>
     <div style="margin-top:18px;font-size:10px;color:rgba(255,255,255,.15);letter-spacing:1px;">INOVAR PROTEÇÃO VEICULAR · SISTEMA INTERNO</div>
   </div>
@@ -290,7 +310,7 @@ async function api(method, path, body = null) {
     const res = await fetch(url, opts)
     const data = await res.json()
 
-    if (res.status === 401) {
+    if (res.status === 401 && authToken) {
       doLogout(); showToast('Sessão expirada. Faça login novamente.', 'error'); return null
     }
     if (!res.ok) {
@@ -362,6 +382,51 @@ function showLoginError(msg) {
   const el = document.getElementById('login-error')
   el.textContent = msg; el.style.display = 'block'
   setTimeout(() => el.style.display = 'none', 3000)
+}
+
+function showCadastro() {
+  document.getElementById('screen-login').style.display = 'none'
+  document.getElementById('screen-cadastro').style.display = 'flex'
+  document.getElementById('cad-error').style.display = 'none'
+  document.getElementById('cad-success').style.display = 'none'
+}
+
+function showLogin() {
+  document.getElementById('screen-cadastro').style.display = 'none'
+  document.getElementById('screen-login').style.display = 'flex'
+}
+
+async function doCadastro() {
+  const nome      = document.getElementById('cad-nome')?.value.trim()
+  const login     = document.getElementById('cad-login')?.value.trim()
+  const whatsapp  = document.getElementById('cad-whatsapp')?.value.trim()
+  const senha     = document.getElementById('cad-senha')?.value
+  const errEl     = document.getElementById('cad-error')
+  const succEl    = document.getElementById('cad-success')
+  const btn       = document.getElementById('btn-cadastro')
+
+  errEl.style.display = 'none'
+  succEl.style.display = 'none'
+
+  if (!nome)    { errEl.textContent = 'Informe seu nome'; errEl.style.display='block'; return }
+  if (!login)   { errEl.textContent = 'Informe seu e-mail'; errEl.style.display='block'; return }
+  if (!whatsapp){ errEl.textContent = 'Informe seu WhatsApp'; errEl.style.display='block'; return }
+  if (!senha || senha.length < 6) { errEl.textContent = 'Senha mínimo 6 caracteres'; errEl.style.display='block'; return }
+
+  btn.textContent = 'Aguarde...'; btn.disabled = true
+
+  const data = await api('POST', '/api/auth/register', { nome, login, senha, whatsapp })
+  btn.textContent = 'SOLICITAR ACESSO →'; btn.disabled = false
+
+  if (!data) return
+
+  succEl.textContent = '✅ Solicitação enviada! Aguarde a aprovação do gestor para acessar o sistema.'
+  succEl.style.display = 'block'
+  document.getElementById('cad-nome').value = ''
+  document.getElementById('cad-login').value = ''
+  document.getElementById('cad-whatsapp').value = ''
+  document.getElementById('cad-senha').value = ''
+  setTimeout(() => showLogin(), 4000)
 }
 
 // Recuperar sessão se já logado
@@ -534,9 +599,13 @@ function statusTag(status) {
 // ═══════════════════════════════════════════════════════════════
 async function updateBell() {
   if (!ADMIN_PERFIS.includes(currentUser?.perfil)) return
-  const data = await api('GET', `/api/dashboard?mes=${filterMes}`)
+  const [data, collabData] = await Promise.all([
+    api('GET', `/api/dashboard?mes=${filterMes}`),
+    api('GET', '/api/colaboradores?status=pendente'),
+  ])
   if (!data) return
-  const total = Number(data.totais?.aguardando||0) + Number(data.indicacoes?.aguardando||0)
+  const pendentesAcesso = collabData?.colaboradores?.length || 0
+  const total = Number(data.totais?.aguardando||0) + Number(data.indicacoes?.aguardando||0) + pendentesAcesso
   const badge = document.getElementById('bell-count')
   if (badge) {
     badge.textContent = total
@@ -551,7 +620,8 @@ function toggleNotif() {
     panel.classList.remove('hidden')
     panel.innerHTML = `<div style="padding:12px 14px;border-bottom:1px solid var(--border);font-weight:800;font-size:13px;">🔔 Notificações</div>
       <div class="notif-item" onclick="navigate('adm-confirmacao')">⏳ Cupons aguardando aprovação</div>
-      <div class="notif-item" onclick="navigate('adm-premiadas')">🏅 Indicações para validar</div>`
+      <div class="notif-item" onclick="navigate('adm-premiadas')">🏅 Indicações para validar</div>
+      <div class="notif-item" onclick="navigate('adm-usuarios')">👤 Solicitações de acesso pendentes</div>`
     document.addEventListener('click', closeNotifOutside)
   } else {
     panel.classList.add('hidden')
@@ -1283,12 +1353,35 @@ async function pageAdmUsuarios() {
   if (!data) return
 
   const cols = data.colaboradores
+  const pendentes = cols.filter(c => c.status === 'pendente')
+  const ativos    = cols.filter(c => c.status !== 'pendente')
+
   el.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div><h2 style="font-size:20px;font-weight:800;">👥 Colaboradores & Permissões</h2>
-      <p style="font-size:12px;color:var(--muted);">${cols.length} usuários · ${cols.filter(c=>c.ativo).length} ativos</p></div>
+      <p style="font-size:12px;color:var(--muted);">${cols.length} usuários · ${cols.filter(c=>c.ativo).length} ativos${pendentes.length ? ` · <span style="color:var(--yellow);font-weight:700;">⏳ ${pendentes.length} aguardando aprovação</span>` : ''}</p></div>
       <button class="btn btn-brand" onclick="abrirModalColaborador()">+ Novo Colaborador</button>
     </div>
+    ${pendentes.length ? `
+    <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:12px;">⏳ Solicitações Pendentes (${pendentes.length})</div>
+      ${pendentes.map(c => `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;" id="pend-${c.id}">
+          <div style="width:36px;height:36px;border-radius:6px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--yellow);font-size:14px;">${c.avatar}</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:13px;">${c.nome}</div>
+            <div style="font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:2px;">
+              <span>📧 ${c.login}</span>
+              ${c.whatsapp ? `<span>📞 ${c.whatsapp}</span>` : ''}
+              <span>📅 ${formatDate(c.criado_em)}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-green btn-sm" onclick="aprovarColaborador(${c.id})">✅ Aprovar + WA</button>
+            <button class="btn btn-red btn-sm" onclick="recusarColaborador(${c.id})">✗ Recusar</button>
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
     <div class="table-wrap">
       <table>
         <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Meta</th><th>Status</th><th>Ações</th></tr></thead>
@@ -1316,6 +1409,23 @@ async function pageAdmUsuarios() {
         </tbody>
       </table>
     </div>`
+}
+
+async function aprovarColaborador(id) {
+  const data = await api('PUT', '/api/colaboradores', {id, aprovar: true})
+  if (!data) return
+  showToast('✅ Acesso aprovado! WhatsApp enviado.', 'success')
+  updateBell()
+  document.getElementById(`pend-${id}`)?.remove()
+  navigate('adm-usuarios')
+}
+
+async function recusarColaborador(id) {
+  const data = await api('PUT', '/api/colaboradores', {id, ativo: false})
+  if (!data) return
+  showToast('Solicitação recusada.', 'error')
+  document.getElementById(`pend-${id}`)?.remove()
+  navigate('adm-usuarios')
 }
 
 async function abrirModalColaborador(id = null) {
@@ -1347,6 +1457,8 @@ async function abrirModalColaborador(id = null) {
         <input type="text" id="mc-nome" value="${cNome}" placeholder="Ex: João da Silva" ${inputStyle()}></div>
       <div class="field"><label>E-mail / Login *</label>
         <input type="email" id="mc-login" value="${cLogin}" placeholder="email@inovar.com.br" ${inputStyle()}></div>
+      <div class="field"><label>WhatsApp</label>
+        <input type="tel" id="mc-whatsapp" value="${c?.whatsapp||''}" placeholder="(47) 9999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
       <div class="field"><label>Senha *</label>
         <input type="password" id="mc-senha" placeholder="${senhaHint}" ${inputStyle()}></div>
       <div class="field"><label>Perfil *</label>
@@ -1375,12 +1487,13 @@ async function salvarColaborador(id) {
   if (!nome)  { showToast('Informe o nome','error'); return }
   if (!login) { showToast('Informe o login','error'); return }
 
+  const whatsapp = document.getElementById('mc-whatsapp')?.value.trim() || ''
   let data
   if (id && id !== 'null') {
-    data = await api('PUT', '/api/colaboradores', {id, nome, login, senha: senha||undefined, perfil, meta, avatar})
+    data = await api('PUT', '/api/colaboradores', {id, nome, login, senha: senha||undefined, perfil, meta, avatar, whatsapp})
   } else {
     if (!senha || senha.length < 6) { showToast('Senha mínimo 6 caracteres','error'); return }
-    data = await api('POST', '/api/colaboradores', {nome, login, senha, perfil, meta, avatar})
+    data = await api('POST', '/api/colaboradores', {nome, login, senha, perfil, meta, avatar, whatsapp})
   }
   if (!data) return
   closeModal()
@@ -1402,40 +1515,29 @@ async function pageAdmRelatorio() {
   const el = document.getElementById('content-area')
   el.innerHTML = loadingHTML()
 
-  const [preview, cfgData] = await Promise.all([
-    api('GET', '/api/relatorio'),
-    api('GET', '/api/config?categoria=relatorio'),
-  ])
+  const preview = await api('GET', '/api/relatorio')
   if (!preview) return
-
-  const cfg = cfgData?.config || {}
-  const numSalvo   = cfg.relatorio_numero   || ''
-  const horaSalva  = cfg.relatorio_horario  || '08:00'
-  const freqSalva  = cfg.relatorio_frequencia || 'diario'
-  const emailSalvo = cfg.relatorio_email    || ''
-  const temNumero  = numSalvo.replace(/\D/g,'').length >= 10
 
   el.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;max-width:680px;">
       <div><h2 style="font-size:20px;font-weight:800;">📨 Relatório Automático</h2>
       <p style="font-size:12px;color:var(--muted);">Configurar e disparar relatório no padrão VAI</p></div>
-      <button class="btn btn-brand" onclick="enviarRelatorioAgora()" id="btn-enviar-rel">▶ Enviar Agora</button>
+      <button class="btn btn-brand" onclick="enviarRelatorioAgora()">▶ Enviar Agora</button>
     </div>
     <div style="max-width:680px;">
-      ${!temNumero ? '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">⚠️ Configure o <b>Número WhatsApp</b> abaixo e salve antes de enviar.</div>' : '<div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:11px 14px;margin-bottom:14px;font-size:12px;">✅ Número configurado: <b>' + numSalvo + '</b> — pronto para envio.</div>'}
       <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:800;margin-bottom:14px;">⏰ Agendamento e Destino</div>
+        <div style="font-size:13px;font-weight:800;margin-bottom:14px;">⏰ Agendamento</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="${horaSalva}" ${inputStyle()}></div>
+          <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="08:00" ${inputStyle()}></div>
           <div class="field"><label>Frequência</label>
             <select id="rel-freq" ${inputStyle()}>
-              <option value="diario" ${freqSalva==='diario'?'selected':''}>📅 Diário</option>
-              <option value="semanal" ${freqSalva==='semanal'?'selected':''}>📆 Semanal</option>
-              <option value="mensal" ${freqSalva==='mensal'?'selected':''}>🗓️ Mensal</option>
+              <option value="diario">📅 Diário</option>
+              <option value="semanal">📆 Semanal</option>
+              <option value="mensal">🗓️ Mensal</option>
             </select>
           </div>
-          <div class="field"><label>Número WhatsApp *</label><input type="tel" id="rel-num" value="${numSalvo}" placeholder="(47) 9999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
-          <div class="field"><label>E-mail</label><input type="email" id="rel-email" value="${emailSalvo}" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
+          <div class="field"><label>Número WhatsApp</label><input type="tel" id="rel-num" placeholder="(47) 99999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
+          <div class="field"><label>E-mail</label><input type="email" id="rel-email" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px;">
           <button class="btn btn-brand" onclick="salvarConfigRelatorio()">💾 Salvar Configuração</button>
@@ -1449,16 +1551,8 @@ async function pageAdmRelatorio() {
 }
 
 async function enviarRelatorioAgora() {
-  const num = document.getElementById('rel-num')?.value?.replace(/\D/g,'') || ''
-  if (num.length < 10) {
-    showToast('⚠️ Configure e salve o Número WhatsApp primeiro', 'error')
-    return
-  }
-  const btn = document.getElementById('btn-enviar-rel')
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enviando...' }
-  showToast('⏳ Gerando e enviando relatório...', '')
+  showToast('⏳ Gerando relatório...', '')
   const data = await api('POST', '/api/relatorio')
-  if (btn) { btn.disabled = false; btn.textContent = '▶ Enviar Agora' }
   if (!data) return
   showToast(data.enviado ? '✅ Relatório enviado!' : '⚠️ ' + (data.motivo||'Erro'), data.enviado?'success':'error')
 }
@@ -1466,15 +1560,13 @@ async function enviarRelatorioAgora() {
 async function salvarConfigRelatorio() {
   const updates = {}
   const g = id => document.getElementById(id)?.value
-  if (g('rel-hora'))  updates.relatorio_horario     = g('rel-hora')
-  if (g('rel-freq'))  updates.relatorio_frequencia  = g('rel-freq')
-  if (g('rel-num'))   updates.relatorio_numero      = g('rel-num')
-  if (g('rel-email')) updates.relatorio_email       = g('rel-email')
-  if (!Object.keys(updates).length) { showToast('Nada para salvar', ''); return }
-  const data = await api('POST', '/api/config', updates)
-  if (data) {
-    showToast('✅ Configurações salvas!', 'success')
-    navigate('adm-relatorio') // recarrega para mostrar status atualizado
+  if (g('rel-hora'))  updates.relatorio_horario = g('rel-hora')
+  if (g('rel-freq'))  updates.relatorio_frequencia = g('rel-freq')
+  if (g('rel-num'))   updates.relatorio_numero = g('rel-num')
+  if (g('rel-email')) updates.relatorio_email  = g('rel-email')
+  if (Object.keys(updates).length) {
+    const data = await api('POST', '/api/config', updates)
+    if (data) showToast('✅ Configurações salvas!', 'success')
   }
 }
 
