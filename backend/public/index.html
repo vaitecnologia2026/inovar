@@ -998,7 +998,7 @@ async function abrirEditarCupom(id) {
  if (!data) return
  const c = data.cupom
  const origs = await api('GET', '/api/origens?ativo=true')
- const origOpts = (origs?.origens||[]).map(o => `<option value="${o.nome}" ${o.nome===c.origem?'selected':''}>${o.icone} ${o.nome}</option>`).join('')
+ const origOpts = (origs?.origens||[]).map(o => `<option value="${o.nome}" ${o.nome===c.origem?'selected':''}>${o.nome}</option>`).join('')
 
  openModal(`
  <div class="modal-head">
@@ -2065,7 +2065,7 @@ function cupomCardHTML(c) {
 // 
 async function pageVSorteio() {
  const origs = await api('GET', '/api/origens?ativo=true')
- const origOpts = (origs?.origens||[]).map(o => `<option value="${o.nome}">${o.icone} ${o.nome}</option>`).join('')
+ const origOpts = (origs?.origens||[]).map(o => `<option value="${o.nome}">${o.nome}</option>`).join('')
  const config = await api('GET', '/api/config?categoria=cupom')
  const cupomCounter = Date.now() % 10000 // placeholder
 
@@ -2133,7 +2133,7 @@ function showSuccessOverlaySorteio(codigo, nome, tel, placa, origem) {
  overlay.classList.remove('hidden')
  overlay.innerHTML = `
  <div style="background:var(--card);border:1px solid var(--border);border-top:3px solid var(--yellow);border-radius:10px;padding:36px;max-width:480px;width:100%;text-align:center;animation:fadeUp .3s ease;">
- <div style="width:72px;height:72px;border-radius:50%;background:rgba(245,158,11,.15);border:2px solid rgba(245,158,11,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:32px;animation:pulse 1.5s infinite;"></div>
+ <div style="width:72px;height:72px;border-radius:50%;background:rgba(245,158,11,.15);border:2px solid rgba(245,158,11,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--yellow);animation:pulse 1.5s infinite;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
  <div style="font-size:20px;font-weight:900;color:var(--yellow);margin-bottom:5px;">Cadastro Registrado!</div>
  <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Aguardando aprovação do admin para disparar o WhatsApp</div>
  <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:12px;margin-bottom:16px;font-size:12px;text-align:left;">
@@ -2238,7 +2238,7 @@ function showPremiadaOverlay(codigo, indNome, indPlaca, indTel, indicados) {
  overlay.classList.remove('hidden')
  overlay.innerHTML = `
  <div style="background:var(--card);border:1px solid var(--border);border-top:3px solid var(--green);border-radius:10px;padding:36px;max-width:500px;width:100%;text-align:center;animation:fadeUp .3s ease;">
- <div style="width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:32px;animation:pulse 1.5s infinite;"></div>
+ <div style="width:72px;height:72px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--green);animation:pulse 1.5s infinite;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
  <div style="font-size:20px;font-weight:900;color:var(--green);margin-bottom:5px;">Indicação Registrada!</div>
  <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">O admin será notificado para validar</div>
  <div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.15);border-radius:6px;padding:12px 14px;margin-bottom:16px;text-align:left;font-size:12px;">
