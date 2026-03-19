@@ -63,22 +63,19 @@ _INOVAR Proteção Veicular · Sistema VAI_`
 }
 
 export async function enviarRelatorioParaEquipe() {
-  const { rows: config } = await query(
-    `SELECT valor FROM config_sistema WHERE chave IN ('notif_numero_equipe','notif_whatsapp_equipe')
-     ORDER BY chave`
-  )
-  const cfg = Object.fromEntries(
-    (await query(`SELECT chave, valor FROM config_sistema`)).rows.map(r => [r.chave, r.valor])
-  )
+  const { rows } = await query(`SELECT chave, valor FROM config_sistema`)
+  const cfg = Object.fromEntries(rows.map(r => [r.chave, r.valor]))
 
-  if (cfg.notif_whatsapp_equipe !== 'true') return { enviado: false, motivo: 'desativado' }
-  if (!cfg.notif_numero_equipe)              return { enviado: false, motivo: 'sem número' }
+  // Usa relatorio_numero como fonte principal do número
+  const numero = cfg.relatorio_numero || cfg.notif_numero_equipe || ''
+
+  if (!numero) return { enviado: false, motivo: 'sem número configurado' }
 
   const { corpo } = await gerarRelatorio()
 
   await enviarRelatorio({
-    numero: cfg.notif_numero_equipe,
-    nome:   'Equipe INOVAR',
+    numero,
+    nome: 'Equipe INOVAR',
     corpo,
   })
 
