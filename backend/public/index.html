@@ -414,10 +414,8 @@ async function doCadastro() {
   if (!senha || senha.length < 6) { errEl.textContent = 'Senha mínimo 6 caracteres'; errEl.style.display='block'; return }
 
   btn.textContent = 'Aguarde...'; btn.disabled = true
-
   const data = await api('POST', '/api/auth/register', { nome, login, senha, whatsapp })
   btn.textContent = 'SOLICITAR ACESSO →'; btn.disabled = false
-
   if (!data) return
 
   succEl.textContent = '✅ Solicitação enviada! Aguarde a aprovação do gestor para acessar o sistema.'
@@ -1359,29 +1357,29 @@ async function pageAdmUsuarios() {
   el.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <div><h2 style="font-size:20px;font-weight:800;">👥 Colaboradores & Permissões</h2>
-      <p style="font-size:12px;color:var(--muted);">${cols.length} usuários · ${cols.filter(c=>c.ativo).length} ativos${pendentes.length ? ` · <span style="color:var(--yellow);font-weight:700;">⏳ ${pendentes.length} aguardando aprovação</span>` : ''}</p></div>
+      <p style="font-size:12px;color:var(--muted);">${cols.length} usuários · ${cols.filter(c=>c.ativo).length} ativos${pendentes.length ? \` · <span style="color:var(--yellow);font-weight:700;">⏳ \${pendentes.length} aguardando aprovação</span>\` : ''}</p></div>
       <button class="btn btn-brand" onclick="abrirModalColaborador()">+ Novo Colaborador</button>
     </div>
-    ${pendentes.length ? `
+    \${pendentes.length ? \`
     <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:16px;margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:12px;">⏳ Solicitações Pendentes (${pendentes.length})</div>
-      ${pendentes.map(c => `
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;" id="pend-${c.id}">
-          <div style="width:36px;height:36px;border-radius:6px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--yellow);font-size:14px;">${c.avatar}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:12px;">⏳ Solicitações Pendentes (\${pendentes.length})</div>
+      \${pendentes.map(c => \`
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;" id="pend-\${c.id}">
+          <div style="width:36px;height:36px;border-radius:6px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--yellow);font-size:14px;">\${c.avatar}</div>
           <div style="flex:1;">
-            <div style="font-weight:700;font-size:13px;">${c.nome}</div>
+            <div style="font-weight:700;font-size:13px;">\${c.nome}</div>
             <div style="font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:2px;">
-              <span>📧 ${c.login}</span>
-              ${c.whatsapp ? `<span>📞 ${c.whatsapp}</span>` : ''}
-              <span>📅 ${formatDate(c.criado_em)}</span>
+              <span>📧 \${c.login}</span>
+              \${c.whatsapp ? \`<span>📞 \${c.whatsapp}</span>\` : ''}
+              <span>📅 \${formatDate(c.criado_em)}</span>
             </div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" onclick="aprovarColaborador(${c.id})">✅ Aprovar + WA</button>
-            <button class="btn btn-red btn-sm" onclick="recusarColaborador(${c.id})">✗ Recusar</button>
+            <button class="btn btn-green btn-sm" onclick="aprovarColaborador(\${c.id})">✅ Aprovar + WA</button>
+            <button class="btn btn-red btn-sm" onclick="recusarColaborador(\${c.id})">✗ Recusar</button>
           </div>
-        </div>`).join('')}
-    </div>` : ''}
+        </div>\`).join('')}
+    </div>\` : ''}
     <div class="table-wrap">
       <table>
         <thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Meta</th><th>Status</th><th>Ações</th></tr></thead>
@@ -1416,7 +1414,6 @@ async function aprovarColaborador(id) {
   if (!data) return
   showToast('✅ Acesso aprovado! WhatsApp enviado.', 'success')
   updateBell()
-  document.getElementById(`pend-${id}`)?.remove()
   navigate('adm-usuarios')
 }
 
@@ -1424,7 +1421,6 @@ async function recusarColaborador(id) {
   const data = await api('PUT', '/api/colaboradores', {id, ativo: false})
   if (!data) return
   showToast('Solicitação recusada.', 'error')
-  document.getElementById(`pend-${id}`)?.remove()
   navigate('adm-usuarios')
 }
 
@@ -1588,6 +1584,7 @@ async function pageAdmConfig() {
     {id:'cupom',    icon:'🎫', label:'Cupom'},
     {id:'jornada',  icon:'🗺️', label:'Jornada'},
     {id:'sorteio',  icon:'🎰', label:'Sorteio'},
+    {id:'acesso',   icon:'🔑', label:'Acesso'},
     {id:'aparencia',icon:'🎨', label:'Aparência'},
   ]
 
@@ -1635,6 +1632,15 @@ async function pageAdmConfig() {
     ${fld('Prêmio Principal','sort-premio',c.sorteio_premio)}
     ${fld('Data de Início','sort-ini',c.sorteio_data_inicio,'date')}
     ${fld('Data de Encerramento','sort-fim',c.sorteio_data_fim,'date')}
+  </div>`
+  else if (tab==='acesso') body = `
+  <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:11px 14px;margin-bottom:16px;font-size:12px;">
+    💡 Variáveis disponíveis: <b>{nome}</b> (nome do colaborador) e <b>{login}</b> (e-mail de acesso)
+  </div>
+  <div class="field">
+    <label>Mensagem enviada ao aprovar acesso</label>
+    <textarea id="cfg-msg-acesso" rows="4" ${inputStyle()}>${c.msg_aprovacao_acesso||'Olá {nome}! 🎉 Seu acesso foi aprovado. Login: *{login}*'}</textarea>
+    <div style="font-size:10px;color:var(--muted);margin-top:5px;">Esta mensagem é enviada via WhatsApp quando o gestor clica em "Aprovar" na página Colaboradores.</div>
   </div>`
   else if (tab==='aparencia') body = `
   <div style="font-size:13px;font-weight:800;margin-bottom:14px;">Tema da Interface</div>
@@ -1693,6 +1699,10 @@ async function salvarConfig(tab) {
     if (g('sort-fim'))   updates.sorteio_data_fim    = g('sort-fim')
   }
 
+  if (tab==='acesso') {
+    const v = document.getElementById('cfg-msg-acesso')?.value
+    if (v) updates.msg_aprovacao_acesso = v
+  }
   if (!Object.keys(updates).length) { showToast('Nada para salvar',''); return }
   const data = await api('POST', '/api/config', updates)
   if (data) showToast('✅ Configurações salvas!', 'success')
