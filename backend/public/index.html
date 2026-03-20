@@ -6,6 +6,7 @@
 <title>INOVAR — Sistema de Cupons</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+<link rel="shortcut icon" href="/icon-inovar.png" type="image/x-icon">
 <style>
 :root {
  --brand:#E4202A; --brand-dim:#b8181f; --brand-glow:rgba(228,32,42,.12);
@@ -393,8 +394,10 @@ tbody tr{transition:background .1s ease;}
 <!-- LOGIN -->
 <div id="screen-login">
  <div class="login-wrap">
- <div class="inovar-logo"><div class="inovar-logo-text"><span>INOVAR</span></div></div>
- <div class="inovar-sub">Proteção Veicular · Sistema Interno</div>
+<div class="inovar-logo">
+  <img src="inovar-white-logo.png" alt="INOVAR" 
+    style="max-width:180px;width:100%;height:auto;display:block;margin:0 auto;">
+</div> 
  <div class="login-form">
  <div class="field"><label>E-mail / Login</label><input type="email" id="login-email" placeholder="gestor@inovar.com.br" autofocus></div>
  <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
@@ -409,8 +412,10 @@ tbody tr{transition:background .1s ease;}
 <!-- CADASTRO -->
 <div id="screen-cadastro" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0A0A0A,#1a0505 50%,#0A0A0A);">
  <div class="login-wrap">
- <div class="inovar-logo"><div class="inovar-logo-text"><span>INOVAR</span></div></div>
- <div class="inovar-sub">Solicitar Acesso ao Sistema</div>
+<div class="inovar-logo">
+  <img src="inovar-white-logo.png" alt="INOVAR" 
+    style="max-width:180px;width:100%;height:auto;display:block;margin:0 auto;">
+</div>  <div class="inovar-sub">Solicitar Acesso ao Sistema</div>
  <div class="login-form">
  <div class="field"><label>Nome Completo</label><input type="text" id="cad-nome" placeholder="Ex: João da Silva"></div>
  <div class="field"><label>E-mail / Login</label><input type="email" id="cad-login" placeholder="seu@email.com.br"></div>
@@ -429,8 +434,7 @@ tbody tr{transition:background .1s ease;}
  <div class="topbar">
  <div style="display:flex;align-items:center;gap:10px;">
  <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
- <div class="top-logo-text"><span>INOVAR</span></div>
- <div style="width:1px;height:18px;background:var(--border);"></div>
+<img src="inovar-white-logo.png" alt="INOVAR" style="height:28px;width:auto;display:block;"> <div style="width:1px;height:18px;background:var(--border);"></div>
  <div style="font-size:12px;color:var(--muted);font-weight:600;" id="top-page-label">Dashboard</div>
  </div>
  <div class="topbar-right">
