@@ -340,8 +340,17 @@ tbody tr{transition:background .1s ease;}
   .rank-count{font-size:16px;min-width:24px;}
 
   /* ── NOTIF PANEL ── */
+  /* No mobile vira fixed centralizado para não vazar da tela */
   .notif-panel,
-  #notif-panel{width:calc(100vw - 28px)!important;right:0!important;left:auto!important;}
+  #notif-panel{
+    position:fixed!important;
+    top:64px!important;
+    left:14px!important;
+    right:14px!important;
+    width:auto!important;
+    max-width:100%!important;
+    z-index:600!important;
+  }
 
   /* ── TOAST ── */
   #toast{bottom:12px;right:12px;left:12px;}
@@ -387,7 +396,7 @@ tbody tr{transition:background .1s ease;}
  <div class="inovar-logo"><div class="inovar-logo-text"><span>INOVAR</span></div></div>
  <div class="inovar-sub">Proteção Veicular · Sistema Interno</div>
  <div class="login-form">
- <div class="field"><label>E-mail / Login</label><input type="email" id="login-email" placeholder="" autofocus></div>
+ <div class="field"><label>E-mail / Login</label><input type="email" id="login-email" placeholder="gestor@inovar.com.br" autofocus></div>
  <div class="field"><label>Senha</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
  <div id="login-error" style="font-size:12px;color:var(--red);text-align:center;display:none;"></div>
  <button class="btn btn-brand" id="btn-login" style="justify-content:center;padding:13px;font-size:14px;letter-spacing:1px;text-transform:uppercase;border-radius:4px;" onclick="doLogin()">ACESSAR </button>
@@ -440,6 +449,7 @@ tbody tr{transition:background .1s ease;}
  </div>
  <div class="main">
  <div id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+ <div id="notif-overlay" onclick="closeNotif()" style="display:none;position:fixed;inset:0;z-index:590;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);"></div>
  <div class="sidebar" id="sidebar"></div>
  <div class="content" id="content-area"></div>
  </div>
@@ -871,6 +881,10 @@ function toggleNotif() {
  if (!panel) return
  if (panel.classList.contains('hidden')) {
  panel.classList.remove('hidden')
+ // Mostra overlay no mobile
+ const isMob = window.innerWidth <= 768
+ const notifOv = document.getElementById('notif-overlay')
+ if (isMob && notifOv) notifOv.style.display = 'block'
  const c = window._bellCounts || {nCupons:0, nInds:0, nAcesso:0, total:0}
  const item = (svg, label, count, page, color) => count > 0
  ? `<div class="notif-item" onclick="closeNotif();navigate('${page}')" style="display:flex;align-items:center;gap:10px;">
@@ -898,11 +912,16 @@ function toggleNotif() {
 
 function closeNotif() {
  document.getElementById('notif-panel')?.classList.add('hidden')
+ const notifOv = document.getElementById('notif-overlay')
+ if (notifOv) notifOv.style.display = 'none'
  document.removeEventListener('click', closeNotifOutside)
 }
 
 function closeNotifOutside(e) {
  const wrap = document.getElementById('bell-wrap')
+ const notifOv = document.getElementById('notif-overlay')
+ // Se clicou no overlay de notif, já fechou via onclick — ignora aqui
+ if (notifOv && notifOv.contains(e.target)) return
  if (wrap && !wrap.contains(e.target)) {
  closeNotif()
  }
@@ -1966,12 +1985,19 @@ async function pageAdmRelatorio() {
  </div>
  <div style="max-width:680px;">
  <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:18px;margin-bottom:16px;">
- <div style="font-size:13px;font-weight:800;margin-bottom:14px;">Destino relatório</div>
- <p style="font-size:11px;color:var(--muted);margin-bottom:14px;">Disparos automáticos todos os dias às 14h</p>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+ <div style="font-size:13px;font-weight:800;margin-bottom:14px;">⏰ Agendamento</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+ <div class="field"><label>Horário</label><input type="time" id="rel-hora" value="08:00" ${inputStyle()}></div>
+ <div class="field"><label>Frequência</label>
+ <select id="rel-freq" ${inputStyle()}>
+ <option value="diario"> Diário</option>
+ <option value="semanal"> Semanal</option>
+ <option value="mensal"> Mensal</option>
+ </select>
+ </div>
  <div class="field"><label>Número WhatsApp</label><input type="tel" id="rel-num" placeholder="(47) 99999-9999" oninput="mascaraTel(this)" ${inputStyle()}></div>
  <div class="field"><label>E-mail</label><input type="email" id="rel-email" placeholder="gestor@inovar.com.br" ${inputStyle()}></div>
-</div>
+ </div>
  <div style="display:flex;gap:8px;margin-top:14px;">
  <button class="btn btn-brand" onclick="salvarConfigRelatorio()"> Salvar Configuração</button>
  </div>
@@ -1993,7 +2019,8 @@ async function enviarRelatorioAgora() {
 async function salvarConfigRelatorio() {
  const updates = {}
  const g = id => document.getElementById(id)?.value
- 
+ if (g('rel-hora')) updates.relatorio_horario = g('rel-hora')
+ if (g('rel-freq')) updates.relatorio_frequencia = g('rel-freq')
  if (g('rel-num')) updates.relatorio_numero = g('rel-num')
  if (g('rel-email')) updates.relatorio_email = g('rel-email')
  if (Object.keys(updates).length) {
