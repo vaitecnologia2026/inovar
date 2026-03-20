@@ -251,6 +251,132 @@ tbody tr{transition:background .1s ease;}
 /* Lucide icons inline */
 .ic{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;}
 .ic svg{pointer-events:none;}
+
+/* =============================================
+   MOBILE RESPONSIVE — adicionado para celular
+   Nenhuma regra existente foi alterada.
+   ============================================= */
+
+/* Botão hamburguer — visível apenas no mobile */
+.mob-menu-btn{display:none;background:var(--card);border:1px solid var(--border);border-radius:4px;width:34px;height:34px;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.15s;}
+.mob-menu-btn:hover{border-color:var(--brand);}
+.mob-menu-btn svg{stroke:var(--muted);}
+
+/* Overlay escuro por trás da sidebar quando aberta no mobile */
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:149;backdrop-filter:blur(2px);}
+
+@media(max-width:768px){
+
+  /* ── LOGIN ── */
+  .login-wrap{width:100%;padding:0 20px;}
+
+  /* ── TOPBAR ── */
+  .topbar{padding:0 14px;}
+  .mob-menu-btn{display:flex;}
+  /* Esconde o label de página no mobile para economizar espaço */
+  #top-page-label{display:none;}
+  /* Esconde o separador ao lado do logo */
+  .topbar > div > div[style*="width:1px"]{display:none!important;}
+  /* Esconde nome e role da pílula no mobile, deixa só avatar */
+  .user-pill #top-name{display:none;}
+  .user-pill .tag{display:none;}
+  .user-pill{padding:4px 7px;}
+  /* Esconde texto "Sair", deixa só ícone */
+  .topbar .btn-ghost.btn-sm span,
+  .topbar .btn-ghost.btn-sm{font-size:0;padding:0;width:34px;height:34px;justify-content:center;}
+  .topbar .btn-ghost.btn-sm svg{width:15px;height:15px;}
+
+  /* ── SIDEBAR (drawer) ── */
+  .sidebar{
+    position:fixed;
+    top:56px;left:0;
+    width:240px;
+    height:calc(100vh - 56px);
+    z-index:150;
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    border-top:none;
+    box-shadow:4px 0 24px rgba(0,0,0,.4);
+  }
+  .sidebar.mob-open{transform:translateX(0);}
+  #sidebar-overlay.mob-open{display:block;}
+
+  /* ── CONTENT ── */
+  .content{padding:16px;}
+
+  /* ── STAT GRID ── */
+  .stat-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .stat-value{font-size:24px;}
+
+  /* ── GRID2 ── */
+  .grid2{grid-template-columns:1fr!important;}
+
+  /* ── TABLES: scroll horizontal ── */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:600px;}
+
+  /* ── FILTER BAR ── */
+  .filter-bar{flex-direction:column;align-items:stretch;}
+  .filter-bar input,.filter-bar select{width:100%;min-width:0;}
+
+  /* ── MODAL ── */
+  .modal-overlay{padding:10px;}
+  .modal{padding:18px;max-height:90vh;overflow-y:auto;}
+  .modal-actions{flex-wrap:wrap;}
+  .modal-actions .btn{flex:1;justify-content:center;min-width:100px;}
+
+  /* ── CONFIRM CARD ── */
+  .confirm-card{flex-wrap:wrap;}
+  .confirm-actions{width:100%;justify-content:flex-end;margin-top:8px;}
+
+  /* ── TABS ── */
+  .tabs{width:100%;}
+  .tab{flex:1;text-align:center;padding:7px 8px;}
+
+  /* ── CUPOM CARD ── */
+  .cupom-card{flex-wrap:wrap;gap:10px;}
+
+  /* ── RANKING ── */
+  .rank-count{font-size:16px;min-width:24px;}
+
+  /* ── NOTIF PANEL ── */
+  .notif-panel,
+  #notif-panel{width:calc(100vw - 28px)!important;right:0!important;left:auto!important;}
+
+  /* ── TOAST ── */
+  #toast{bottom:12px;right:12px;left:12px;}
+  .toast-msg{font-size:11px;}
+
+  /* ── OVERLAY FULL (sorteio/premiada success) ── */
+  #overlay-full{padding:12px;}
+
+  /* ── SECTION HEAD ── */
+  .section-head{flex-wrap:wrap;gap:8px;}
+
+  /* ── FORMULÁRIOS INLINE (grids dentro de innerHTML) ── */
+  /* Targets inline grids gerados por JS que usam grid-template-columns fixo */
+  [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important;}
+  [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important;}
+  [style*="grid-template-columns:repeat(4"]{grid-template-columns:1fr 1fr!important;}
+  [style*="grid-template-columns: repeat(4"]{grid-template-columns:1fr 1fr!important;}
+  [style*="grid-template-columns:repeat(3"]{grid-template-columns:1fr 1fr!important;}
+  [style*="grid-template-columns: repeat(3"]{grid-template-columns:1fr 1fr!important;}
+  [style*="grid-template-columns:repeat(auto-fill"]{grid-template-columns:1fr!important;}
+
+  /* ── CABEÇALHOS DE PÁGINA gerados por JS ── */
+  [style*="justify-content:space-between"][style*="align-items:center"]{flex-wrap:wrap;gap:10px;}
+
+  /* ── BOTÕES em linha no topo das páginas ── */
+  [style*="display:flex"][style*="gap:8px"] .btn{font-size:11px;}
+}
+
+@media(max-width:400px){
+  .stat-grid{grid-template-columns:1fr 1fr;gap:8px;}
+  .stat-value{font-size:20px;}
+  .stat-card{padding:12px;}
+  .content{padding:12px;}
+  .modal{padding:14px;}
+}
 </style>
 </head>
 <body>
@@ -292,7 +418,8 @@ tbody tr{transition:background .1s ease;}
 <!-- SHELL -->
 <div id="shell">
  <div class="topbar">
- <div style="display:flex;align-items:center;gap:14px;">
+ <div style="display:flex;align-items:center;gap:10px;">
+ <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleMobileSidebar()" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
  <div class="top-logo-text"><span>INOVAR</span></div>
  <div style="width:1px;height:18px;background:var(--border);"></div>
  <div style="font-size:12px;color:var(--muted);font-weight:600;" id="top-page-label">Dashboard</div>
@@ -312,6 +439,7 @@ tbody tr{transition:background .1s ease;}
  </div>
  </div>
  <div class="main">
+ <div id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
  <div class="sidebar" id="sidebar"></div>
  <div class="content" id="content-area"></div>
  </div>
@@ -2394,6 +2522,36 @@ function showToast(msg, type = '') {
  el.textContent = msg
  document.getElementById('toast').appendChild(el)
  setTimeout(() => el.remove(), 3800)
+}
+
+// ── MOBILE SIDEBAR TOGGLE ──
+function toggleMobileSidebar() {
+ const sidebar = document.getElementById('sidebar')
+ const overlay = document.getElementById('sidebar-overlay')
+ if (!sidebar || !overlay) return
+ const isOpen = sidebar.classList.contains('mob-open')
+ if (isOpen) {
+  sidebar.classList.remove('mob-open')
+  overlay.classList.remove('mob-open')
+ } else {
+  sidebar.classList.add('mob-open')
+  overlay.classList.add('mob-open')
+ }
+}
+
+function closeMobileSidebar() {
+ const sidebar = document.getElementById('sidebar')
+ const overlay = document.getElementById('sidebar-overlay')
+ if (!sidebar || !overlay) return
+ sidebar.classList.remove('mob-open')
+ overlay.classList.remove('mob-open')
+}
+
+// Fecha sidebar ao navegar no mobile
+const _origNavigate = navigate
+window.navigate = function(page) {
+ closeMobileSidebar()
+ _origNavigate(page)
 }
 </script>
 </body>
