@@ -1072,11 +1072,35 @@ async function aprovarCupom(id) {
 }
 
 async function reprovarCupom(id) {
- const data = await api('PATCH', `/api/cupons/${id}`, {acao:'reprovar', adminId: currentUser.id})
- if (!data) return
- showToast('Cadastro recusado.', 'error')
- updateBell()
- document.getElementById(`cc-${id}`)?.remove()
+  openModal(`
+    <div class="modal-head">
+      <div><div class="modal-title">Recusar Cadastro</div><div class="modal-sub">Informe o motivo (visível apenas à equipe)</div></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-form">
+      <div class="field">
+        <label>Motivo da Reprovação</label>
+        <textarea id="repr-obs" rows="3" placeholder="Ex: Dados incompletos, placa inválida..." ${inputStyle()}></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-red" onclick="confirmarReprovacao(${id})">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+          Confirmar Reprovação
+        </button>
+      </div>
+    </div>`)
+}
+
+async function confirmarReprovacao(id) {
+  const obs = document.getElementById('repr-obs')?.value.trim()
+  const data = await api('PATCH', `/api/cupons/${id}`, {acao:'reprovar', adminId: currentUser.id, obsReprovacao: obs})
+  if (!data) return
+  closeModal()
+  showToast('Cadastro recusado.', 'error')
+  updateBell()
+  document.getElementById(`cc-${id}`)?.remove()
+  document.getElementById(`cc-dash-${id}`)?.remove()
 }
 
 async function aprovarTodos() {
