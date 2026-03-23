@@ -1989,10 +1989,13 @@ async function salvarColaborador(id) {
 }
 
 async function toggleColaborador(id, ativo) {
- const data = await api('PUT', '/api/colaboradores', {id, ativo})
- if (!data) return
- showToast(ativo ? 'Colaborador ativado' : 'Colaborador desativado', ativo?'success':'')
- navigate('adm-usuarios')
+  const body = ativo 
+    ? {id, ativo: true, status: 'ativo'} 
+    : {id, ativo: false, status: 'inativo'}
+  const data = await api('PUT', '/api/colaboradores', body)
+  if (!data) return
+  showToast(ativo ? 'Colaborador ativado' : 'Colaborador desativado', ativo?'success':'')
+  navigate('adm-usuarios')
 }
 
 // 
