@@ -72,9 +72,10 @@ export default async function handler(req, res) {
       }
 
       if (acao === 'reprovar') {
-        const cupom = await reprovarCupom(Number(id), adminId)
-        return ok(res, { cupom })
-      }
+      const { obsReprovacao } = req.body || {}
+      const cupom = await reprovarCupom(Number(id), adminId, obsReprovacao)
+      return ok(res, { cupom })
+    }
 
       return err(res, 'Ação inválida. Use "aprovar" ou "reprovar"')
     }
