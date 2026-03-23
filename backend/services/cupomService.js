@@ -71,7 +71,7 @@ export async function aprovarCupom(cupomId, adminId) {
 }
 
 // Reprova cupom
-export async function reprovarCupom(cupomId, adminId) {
+export async function reprovarCupom(cupomId, adminId, obsReprovacao = '') {
   const { rows: [cupom] } = await query('SELECT * FROM cupons WHERE id=$1', [cupomId])
   if (!cupom) throw new Error('Cupom não encontrado')
 
@@ -88,13 +88,14 @@ export async function reprovarCupom(cupomId, adminId) {
   }
 
   const { rows: [updated] } = await query(
-    `UPDATE cupons SET status='reprovado', aprovado_por=$1, aprovado_em=NOW() WHERE id=$2 RETURNING *`,
-    [adminId, cupomId]
+    `UPDATE cupons SET status='reprovado', aprovado_por=$1, aprovado_em=NOW(), obs_reprovacao=$2
+     WHERE id=$3 RETURNING *`,
+    [adminId, obsReprovacao, cupomId]
   )
 
   await query(
-    `INSERT INTO logs_cupom (cupom_id, acao, usuario_id) VALUES ($1,'reprovado',$2)`,
-    [cupomId, adminId]
+    `INSERT INTO logs_cupom (cupom_id, acao, usuario_id, detalhes) VALUES ($1,'reprovado',$2,$3)`,
+    [cupomId, adminId, JSON.stringify({ obsReprovacao })]
   )
 
   return updated
