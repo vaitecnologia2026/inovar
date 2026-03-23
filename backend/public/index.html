@@ -1366,8 +1366,8 @@ async function pageAdmVendedores() {
  <td><span class="tag ${v.ativo?'tag-green':'tag-red'}">${v.ativo?' Ativo':' Inativo'}</span></td>
  <td>
  <div style="display:flex;gap:4px;">
- <button class="btn btn-ghost btn-sm" onclick="abrirModalColaborador(${v.id})"></button>
- <button class="btn btn-ghost btn-sm" onclick="editarMetaModal(${v.id},${v.meta})"></button>
+<button class="btn btn-ghost btn-sm" onclick="abrirModalColaborador(${v.id})" title="Editar" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+<button class="btn btn-ghost btn-sm" onclick="editarMetaModal(${v.id},${v.meta})" title="Meta" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></button>
  </div>
  </td>
  </tr>`}).join('')}
@@ -1893,8 +1893,8 @@ async function pageAdmUsuarios() {
  <td><span class="tag ${c.ativo?'tag-green':'tag-red'}">${c.ativo?' Ativo':' Inativo'}</span></td>
  <td>
  <div style="display:flex;gap:4px;">
- <button class="btn btn-ghost btn-sm" onclick="abrirModalColaborador(${c.id})"></button>
- <button class="btn btn-ghost btn-sm" onclick="toggleColaborador(${c.id},${!c.ativo})">${c.ativo?'':''}</button>
+ <button class="btn btn-ghost btn-sm" onclick="abrirModalColaborador(${c.id})" title="Editar" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+<button class="btn btn-ghost btn-sm" onclick="toggleColaborador(${c.id},${!c.ativo})" title="${c.ativo?'Desativar':'Ativar'}" style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;">${c.ativo?'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>':'<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>'}</button>
  </div>
  </td>
  </tr>`}).join('')}
