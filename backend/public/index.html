@@ -2110,12 +2110,59 @@ async function pageAdmConfig() {
  <div class="field"><label>Mensagem follow-up 2</label><textarea id="cfg-f2m" rows="2" ${inputStyle()}>${c.jornada_followup2_msg||''}</textarea></div>
  <div class="field"><label>Mensagem de aprovação</label><textarea id="cfg-conf" rows="2" ${inputStyle()}>${c.jornada_msg_confirmacao||''}</textarea></div>
  <div class="field"><label>Mensagem de reprovação</label><textarea id="cfg-repr" rows="2" ${inputStyle()}>${c.jornada_msg_reprovacao||''}</textarea></div>`
- else if (tab==='sorteio') body = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
- ${fld('Nome do Sorteio','sort-nome',c.sorteio_nome)}
- ${fld('Prêmio Principal','sort-premio',c.sorteio_premio)}
- ${fld('Data de Início','sort-ini',c.sorteio_data_inicio,'date')}
- ${fld('Data de Encerramento','sort-fim',c.sorteio_data_fim,'date')}
- </div>`
+ else if (tab==='sorteio') {
+  // Monta lista de sorteios salvos no config (sorteio_1_nome, sorteio_2_nome, etc.)
+  const sorteios = []
+  let i = 1
+  while (c[`sorteio_${i}_nome`] !== undefined || i === 1) {
+    sorteios.push({
+      nome:  c[`sorteio_${i}_nome`]  || (i===1 ? c.sorteio_nome  || '' : ''),
+      premio:c[`sorteio_${i}_premio`]|| (i===1 ? c.sorteio_premio || '' : ''),
+      ini:   c[`sorteio_${i}_inicio`]|| (i===1 ? c.sorteio_data_inicio || '' : ''),
+      fim:   c[`sorteio_${i}_fim`]   || (i===1 ? c.sorteio_data_fim    || '' : ''),
+    })
+    i++
+    if (i > 10) break
+  }
+
+  const renderSorteioBloco = (idx, s = {}) => `
+    <div id="sorteio-bloco-${idx}" style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:16px;margin-bottom:12px;position:relative;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;">Sorteio ${idx}</span>
+        ${idx > 1 ? `<button type="button" onclick="removerSorteioBloco(${idx})" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:18px;line-height:1;" title="Remover">×</button>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="field"><label>Nome do Sorteio</label><input type="text" id="sort-${idx}-nome" value="${s.nome||''}" placeholder="Ex: Sorteio INOVAR 2026" ${inputStyle()}></div>
+        <div class="field"><label>Prêmio Principal</label><input type="text" id="sort-${idx}-premio" value="${s.premio||''}" placeholder="Ex: Moto 0km" ${inputStyle()}></div>
+        <div class="field"><label>Data de Início</label><input type="date" id="sort-${idx}-ini" value="${s.ini||''}" ${inputStyle()}></div>
+        <div class="field"><label>Data de Encerramento</label><input type="date" id="sort-${idx}-fim" value="${s.fim||''}" ${inputStyle()}></div>
+      </div>
+    </div>`
+
+  window._sorteioCount = sorteios.length
+
+  body = `
+    <div id="sorteios-container">
+      ${sorteios.map((s, idx) => renderSorteioBloco(idx + 1, s)).join('')}
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="adicionarSorteioBloco()" style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+      Adicionar Sorteio
+    </button>`
+
+  window.adicionarSorteioBloco = function() {
+    window._sorteioCount++
+    const container = document.getElementById('sorteios-container')
+    if (!container) return
+    const div = document.createElement('div')
+    div.innerHTML = renderSorteioBloco(window._sorteioCount, {})
+    container.appendChild(div.firstElementChild)
+  }
+
+  window.removerSorteioBloco = function(idx) {
+    document.getElementById(`sorteio-bloco-${idx}`)?.remove()
+  }
+}
  else if (tab==='acesso') body = `
  <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:11px 14px;margin-bottom:16px;font-size:12px;">
  Variáveis disponíveis: <b>{nome}</b> (nome do colaborador) e <b>{login}</b> (e-mail de acesso)
@@ -2176,11 +2223,16 @@ async function salvarConfig(tab) {
  if (g('conf')) updates.jornada_msg_confirmacao = g('conf')
  if (g('repr')) updates.jornada_msg_reprovacao = g('repr')
  } else if (tab==='sorteio') {
- if (g('sort-nome')) updates.sorteio_nome = g('sort-nome')
- if (g('sort-premio'))updates.sorteio_premio = g('sort-premio')
- if (g('sort-ini')) updates.sorteio_data_inicio = g('sort-ini')
- if (g('sort-fim')) updates.sorteio_data_fim = g('sort-fim')
- }
+  for (let i = 1; i <= (window._sorteioCount || 1); i++) {
+    const el = document.getElementById(`sorteio-bloco-${i}`)
+    if (!el) continue
+    const g = id => document.getElementById(id)?.value
+    if (g(`sort-${i}-nome`))   updates[`sorteio_${i}_nome`]   = g(`sort-${i}-nome`)
+    if (g(`sort-${i}-premio`)) updates[`sorteio_${i}_premio`] = g(`sort-${i}-premio`)
+    if (g(`sort-${i}-ini`))    updates[`sorteio_${i}_inicio`] = g(`sort-${i}-ini`)
+    if (g(`sort-${i}-fim`))    updates[`sorteio_${i}_fim`]    = g(`sort-${i}-fim`)
+  }
+}
 
  if (tab==='acesso') {
  const v = document.getElementById('cfg-msg-acesso')?.value
