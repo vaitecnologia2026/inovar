@@ -113,21 +113,22 @@ export default async function handler(req, res) {
     }
 
     // ── PATCH — validar ou reprovar ─────────────────────
-    if (req.method === 'PATCH') {
-      const { id, acao, adminId } = req.body || {}
-      if (!id || !acao || !adminId) return err(res, 'id, acao e adminId são obrigatórios')
+if (req.method === 'PATCH') {
+  const { id, acao, adminId, obsReprovacao = '' } = req.body || {}
+  if (!id || !acao || !adminId) return err(res, 'id, acao e adminId são obrigatórios')
 
-      if (!['validar','reprovar'].includes(acao)) return err(res, 'Ação inválida')
+  if (!['validar','reprovar'].includes(acao)) return err(res, 'Ação inválida')
 
-      const status = acao === 'validar' ? 'validado' : 'reprovado'
-      const { rows: [updated] } = await query(
-        `UPDATE indicacoes_premiadas SET status=$1, validado_por=$2, validado_em=NOW()
-         WHERE id=$3 RETURNING *`,
-        [status, adminId, id]
-      )
-      if (!updated) return err(res, 'Indicação não encontrada', 404)
-      return ok(res, { indicacao: updated })
-    }
+  const status = acao === 'validar' ? 'validado' : 'reprovado'
+  const { rows: [updated] } = await query(
+    `UPDATE indicacoes_premiadas SET status=$1, validado_por=$2, validado_em=NOW(),
+      obs_reprovacao=CASE WHEN $1='reprovado' THEN $4 ELSE obs_reprovacao END
+     WHERE id=$3 RETURNING *`,
+    [status, adminId, id, obsReprovacao]
+  )
+  if (!updated) return err(res, 'Indicação não encontrada', 404)
+  return ok(res, { indicacao: updated })
+}
   } catch (e) {
     return serverErr(res, e)
   }
