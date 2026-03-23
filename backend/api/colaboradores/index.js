@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
     // ── PUT — atualizar / aprovar colaborador ─────────────────────
     if (req.method === 'PUT') {
-      const { id, nome, login, senha, perfil, meta, avatar, ativo, whatsapp, aprovar } = req.body || {}
+      const { id, nome, login, senha, perfil, meta, avatar, ativo, whatsapp, aprovar, status: statusEnviado } = req.body || {}
       if (!id) return err(res, 'ID é obrigatório')
 
       // Busca estado atual para detectar aprovação
@@ -72,8 +72,10 @@ export default async function handler(req, res) {
       if (!atual) return err(res, 'Colaborador não encontrado', 404)
 
       const aprovando = aprovar === true || (ativo === true && atual.status === 'pendente')
-      const novoStatus = aprovando ? 'ativo' : (ativo === false ? 'inativo' : atual.status)
-      const novoAtivo  = novoStatus === 'ativo'
+      const novoStatus = aprovando ? 'ativo'
+        : statusEnviado ? statusEnviado
+        : (ativo === false ? 'inativo' : atual.status)
+      const novoAtivo = novoStatus === 'ativo'
 
       let senhaClause = ''
       const params = [nome, login, perfil, meta, avatar, novoAtivo, novoStatus, whatsapp, id]
