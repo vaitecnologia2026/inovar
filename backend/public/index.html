@@ -1201,8 +1201,13 @@ async function verDetalheCupom(id) {
  <div style="background:var(--card2);border-radius:4px;padding:10px;"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">PLACA</div><div style="font-size:13px;font-weight:700;color:var(--brand);"> ${c.placa}</div></div>
  <div style="background:var(--card2);border-radius:4px;padding:10px;"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">ORIGEM</div><div style="font-size:13px;"> ${c.origem||'—'}</div></div>
  <div style="background:var(--card2);border-radius:4px;padding:10px;"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">CONSULTOR</div><div style="font-size:13px;">${c.vendedor_nome||'?'}</div></div>
- <div style="background:var(--card2);border-radius:4px;padding:10px;"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">STATUS</div><div style="font-size:13px;">${statusTag(c.status)}</div></div>
- </div>
+<div style="background:var(--card2);border-radius:4px;padding:10px;"><div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:3px;">STATUS</div><div style="font-size:13px;">${statusTag(c.status)}</div></div>
+ ${c.status==='reprovado' && c.obs_reprovacao ? `
+ <div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.15);border-radius:4px;padding:10px;grid-column:1/-1;">
+   <div style="font-size:10px;color:var(--red);font-weight:700;margin-bottom:3px;">MOTIVO DA REPROVAÇÃO</div>
+   <div style="font-size:12px;">${c.obs_reprovacao}</div>
+ </div>` : ''}
+ </div> </div>
  <div class="modal-actions">
  <button class="btn btn-ghost" onclick="closeModal()">Fechar</button>
  ${isAdmin && c.status==='aguard_aprovacao' ? `<button class="btn btn-red btn-sm" onclick="reprovarCupom(${c.id});closeModal()"> Recusar</button><button class="btn btn-green" onclick="aprovarCupom(${c.id});closeModal()"> Aprovar + WA</button>` : ''}
@@ -1715,8 +1720,13 @@ async function pageAdmPremiadas() {
  <b style="color:var(--yellow);font-size:12px;">${ind.codigo}</b>
  <span class="tag ${status}">${statusL}</span>
  <span style="font-size:11px;color:var(--muted);"> ${formatDate(ind.criado_em)}</span>
- <span style="font-size:11px;color:var(--muted);"> ${ind.vendedor_nome||'?'}</span>
+<span style="font-size:11px;color:var(--muted);"> ${ind.vendedor_nome||'?'}</span>
  </div>
+ ${ind.status==='reprovado' && ind.obs_reprovacao ? `
+ <div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.15);border-radius:4px;padding:7px 10px;margin-bottom:8px;font-size:11px;">
+   <span style="color:var(--red);font-weight:700;">Motivo: </span>${ind.obs_reprovacao}
+ </div>` : ''}
+ <div> </div>
  <div style="background:var(--card2);border-radius:4px;padding:9px;margin-bottom:8px;">
  <div style="font-size:10px;color:var(--yellow);font-weight:700;margin-bottom:5px;">INDICADOR</div>
  <div style="font-size:13px;font-weight:700;">${ind.ind_nome}</div>
