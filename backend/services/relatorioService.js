@@ -63,7 +63,7 @@ _INOVAR Proteção Veicular · Sistema VAI_`
 }
 
 export async function enviarRelatorioParaEquipe() {
-  const { rows } = await query(SELECT chave, valor FROM config_sistema)
+const { rows } = await query(`SELECT chave, valor FROM config_sistema`)
   const cfg = Object.fromEntries(rows.map(r => [r.chave, r.valor]))
   // Usa relatorio_numero como fonte principal do número
   const numero = cfg.relatorio_numero || cfg.notif_numero_equipe || ''
