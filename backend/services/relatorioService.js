@@ -63,28 +63,17 @@ _INOVAR Proteção Veicular · Sistema VAI_`
 }
 
 export async function enviarRelatorioParaEquipe() {
-  const { rows } = await query(`SELECT chave, valor FROM config_sistema`)
+  const { rows } = await query(SELECT chave, valor FROM config_sistema)
   const cfg = Object.fromEntries(rows.map(r => [r.chave, r.valor]))
-
+  // Usa relatorio_numero como fonte principal do número
   const numero = cfg.relatorio_numero || cfg.notif_numero_equipe || ''
   if (!numero) return { enviado: false, motivo: 'sem número configurado' }
-
   const { corpo } = await gerarRelatorio()
-
-  try {
-    await enviarRelatorio({
-      numero,
-      nome: 'Equipe INOVAR',
-      corpo,
-    })
-    return { enviado: true, timestamp: new Date().toISOString() }
-  } catch (e) {
-    const status = e.response?.status
-    const body   = e.response?.data
-    console.error('[relatorio] Erro VAI:', status, JSON.stringify(body))
-    return { enviado: false, motivo: `Erro ${status}: ${JSON.stringify(body)}` }
-  }
-}
+  await enviarRelatorio({
+    numero,
+    nome: 'Equipe INOVAR',
+    corpo,
+  })
 
   return { enviado: true, timestamp: new Date().toISOString() }
 }
