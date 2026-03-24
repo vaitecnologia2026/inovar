@@ -18,21 +18,29 @@ export async function sendWhatsApp({ number, name, body, imageUrl = null }) {
   }
   if (imageUrl) message.imageUrl = imageUrl
 
-  const res = await axios.post(
-    process.env.WHATSAPP_API_URL,
-    {
-      whatsappId: process.env.WHATSAPP_ID,
-      messages: [message],
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
-        'Content-Type': 'application/json',
+  try {
+    const res = await axios.post(
+      process.env.WHATSAPP_API_URL,
+      {
+        whatsappId: process.env.WHATSAPP_ID,
+        messages: [message],
       },
-      timeout: 15000,
-    }
-  )
-  return res.data
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+      }
+    )
+    return res.data
+  } catch (e) {
+    console.error('[WA] Status:', e.response?.status)
+    console.error('[WA] Body:', JSON.stringify(e.response?.data))
+    console.error('[WA] URL:', process.env.WHATSAPP_API_URL)
+    console.error('[WA] ID:', process.env.WHATSAPP_ID)
+    throw e
+  }
 }
 
 /**
